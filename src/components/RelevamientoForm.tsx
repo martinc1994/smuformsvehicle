@@ -33,6 +33,8 @@ interface Props {
   usuarioActual: Usuario;
   parametros: Parametro[];
   onSaved: (nuevo: RelevamientoVehiculo) => void;
+  onViewFicha?: (reg: RelevamientoVehiculo) => void;
+  onGoToFotosPredio?: () => void;
 }
 
 const TIPOS_VEHICULO: { label: TipoVehiculo; ruedasDefault: number }[] = [
@@ -69,6 +71,8 @@ export const RelevamientoForm: React.FC<Props> = ({
   usuarioActual,
   parametros,
   onSaved,
+  onViewFicha,
+  onGoToFotosPredio,
 }) => {
   const todayISO = new Date().toISOString().split('T')[0];
 
@@ -122,6 +126,8 @@ export const RelevamientoForm: React.FC<Props> = ({
   // Estado UI
   const [saving, setSaving] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [ultimoGuardado, setUltimoGuardado] =
+    useState<RelevamientoVehiculo | null>(null);
 
   // Filtrar catálogos parametrizados y garantizar que las opciones predeterminadas estén siempre presentes
   const dependenciasRaw = parametros.filter(
@@ -242,11 +248,13 @@ export const RelevamientoForm: React.FC<Props> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
+    setUltimoGuardado(null);
 
     if (!dependencia.trim()) {
       setErrorMsg(
         'Por favor seleccione la Dependencia que efectuó el secuestro en la Sección 1.'
       );
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
 
@@ -254,6 +262,7 @@ export const RelevamientoForm: React.FC<Props> = ({
       setErrorMsg(
         'Por favor complete Marca, Año aproximado y Color predominante en la Sección 2 (Identificación del Vehículo).'
       );
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
 
@@ -301,9 +310,50 @@ export const RelevamientoForm: React.FC<Props> = ({
         }
       );
 
+      setUltimoGuardado(nuevo);
       onSaved(nuevo);
+
+      // Limpiar todos los campos para poder cargar la siguiente planilla de inmediato
+      setDependencia('Dirección Operativa de Tránsito');
+      setNumeroActa('');
+      setFechaIngreso('');
+      setLugarSecuestro('');
+      setSectorCorralon('No especificado');
+      setTipoVehiculo('Motocicleta');
+      setTipoVehiculoOtro('');
+      setMarca('');
+      setModelo('');
+      setAnioAproximado('');
+      setColorPredominante('');
+      setDominio('');
+      setCantidadRuedas(2);
+      setNumeroMotor('');
+      setNumeroChasis('');
+      setObservaciones('');
+      setEstadoGeneral('Regular');
+      setPoseeMotor(true);
+      setPoseeBateria(false);
+      setPoseeLlave(false);
+      setPoseeDocumentacion(false);
+      setPresentaFaltantes(false);
+      setDetalleFaltantes('');
+      setSeEncuentraDesarmado(false);
+      setConservaChapaPatente(true);
+      setAptoParaCircular(false);
+      setFotoFrontal(null);
+      setFotoLateral(null);
+      setFotoPosterior(null);
+
+      // Calcular el próximo idForm disponible
+      const nextCorr = await generarSiguienteCorrelativo();
+      setNumeroCorrelativo(nextCorr);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err: any) {
-      setErrorMsg(err?.message || 'Ocurrió un error al guardar el relevamiento.');
+      setErrorMsg(
+        err?.message ||
+          'RECHAZADO: Ocurrió un error al intentar guardar el formulario en Supabase.'
+      );
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } finally {
       setSaving(false);
     }
@@ -337,9 +387,61 @@ export const RelevamientoForm: React.FC<Props> = ({
       </div>
 
       {errorMsg && (
-        <div className="flex items-start gap-3 p-4 rounded-xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-200 text-sm">
+        <div className="flex items-start gap-3 p-4 rounded-xl bg-rose-50 dark:bg-rose-950/60 border-2 border-rose-300 dark:border-rose-700 text-rose-800 dark:text-rose-200 text-sm shadow-sm">
           <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-rose-600 dark:text-rose-400" />
-          <div className="font-medium">{errorMsg}</div>
+          <div>
+            <div className="font-extrabold uppercase text-xs tracking-wider text-rose-700 dark:text-rose-300">
+              Formulario Rechazado / Error al Guardar
+            </div>
+            <div className="font-medium mt-0.5">{errorMsg}</div>
+          </div>
+        </div>
+      )}
+
+      {ultimoGuardado && (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 border-2 border-emerald-400 dark:border-emerald-700 text-emerald-900 dark:text-emerald-100 shadow-sm">
+          <div className="flex items-start gap-3">
+            <CheckCircle2 className="w-6 h-6 shrink-0 text-emerald-600 dark:text-emerald-400 mt-0.5" />
+            <div>
+              <div className="text-sm font-extrabold">
+                ¡Planilla guardada con éxito! — Código asignado:{' '}
+                <span className="px-2 py-0.5 rounded bg-emerald-600 text-white font-mono">
+                  {ultimoGuardado.numero_correlativo}
+                </span>
+              </div>
+              <p className="text-xs text-emerald-800 dark:text-emerald-200 mt-1">
+                Vehículo:{' '}
+                <strong>
+                  {ultimoGuardado.tipo_vehiculo} {ultimoGuardado.marca}{' '}
+                  {ultimoGuardado.modelo}
+                </strong>{' '}
+                • Dominio:{' '}
+                <strong className="font-mono">{ultimoGuardado.dominio}</strong>. Ya se encuentra disponible en la sección{' '}
+                <em>"2. Relevamiento Fotográfico en Predio"</em>. El formulario quedó limpio para cargar el siguiente vehículo.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
+            {onGoToFotosPredio && (
+              <button
+                type="button"
+                onClick={onGoToFotosPredio}
+                className="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-extrabold transition cursor-pointer"
+              >
+                Ir a Relevamiento Fotográfico
+              </button>
+            )}
+            {onViewFicha && (
+              <button
+                type="button"
+                onClick={() => onViewFicha(ultimoGuardado)}
+                className="px-3.5 py-2 rounded-xl bg-[#1B365D] hover:bg-[#132847] text-white text-xs font-bold transition cursor-pointer"
+              >
+                Ver Ficha A4 ({ultimoGuardado.numero_correlativo})
+              </button>
+            )}
+          </div>
         </div>
       )}
 

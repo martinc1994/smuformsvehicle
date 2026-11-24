@@ -102,7 +102,6 @@ export function App() {
   const handleRelevamientoGuardado = async (nuevo: RelevamientoVehiculo) => {
     await cargarTodo();
     setRegistroSeleccionado(nuevo);
-    setActiveTab('ficha');
   };
 
   const handleOpenFicha = (reg: RelevamientoVehiculo) => {
@@ -274,6 +273,8 @@ export function App() {
             usuarioActual={usuarioActual}
             parametros={parametros}
             onSaved={handleRelevamientoGuardado}
+            onViewFicha={handleOpenFicha}
+            onGoToFotosPredio={() => setActiveTab('fotos_predio')}
           />
         )}
 
@@ -302,7 +303,7 @@ export function App() {
         {activeTab === 'ficha' && registroSeleccionado && (
           <PrintableFicha
             registro={registroSeleccionado}
-            onClose={() => setActiveTab('listado')}
+            onClose={() => setActiveTab('fotos_predio')}
           />
         )}
 

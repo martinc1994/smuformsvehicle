@@ -650,15 +650,19 @@ export async function guardarRelevamiento(
     posterior?: FotoComprimida | null;
   }
 ): Promise<RelevamientoVehiculo> {
+  // Siempre recalcular el siguiente idForm desde la base de datos en el instante de guardar
+  // para evitar colisiones cuando 2 o más operadores de Data Entry tienen el formulario abierto al mismo tiempo.
+  let idFormActual = await generarSiguienteCorrelativo();
+
   const [frontalUrl, lateralUrl, posteriorUrl] = await Promise.all([
     fotos.frontal
-      ? uploadPhotoIfSupabaseAvailable(fotos.frontal, payload.numero_correlativo)
+      ? uploadPhotoIfSupabaseAvailable(fotos.frontal, idFormActual)
       : Promise.resolve(''),
     fotos.lateral
-      ? uploadPhotoIfSupabaseAvailable(fotos.lateral, payload.numero_correlativo)
+      ? uploadPhotoIfSupabaseAvailable(fotos.lateral, idFormActual)
       : Promise.resolve(''),
     fotos.posterior
-      ? uploadPhotoIfSupabaseAvailable(fotos.posterior, payload.numero_correlativo)
+      ? uploadPhotoIfSupabaseAvailable(fotos.posterior, idFormActual)
       : Promise.resolve(''),
   ]);
 
@@ -688,13 +692,59 @@ export async function guardarRelevamiento(
     });
   }
 
-  const dominioLimpio = normalizarDominio(payload.dominio) || 'S/D';
-  const idFormFinal =
-    payload.numero_correlativo?.trim() || (await generarSiguienteCorrelativo());
+  const dominioLimpio = normalizarDominio(payload.dominio) || 'SIN DOMINIO';
+
+  const supabase = getSupabaseClient();
+  if (supabase) {
+    let ultimoError = '';
+    // Hasta 4 intentos automáticos si otro operador insertó el mismo FSMU-XXXX milisegundos antes
+    for (let intento = 0; intento < 4; intento++) {
+      if (intento > 0) {
+        idFormActual = await generarSiguienteCorrelativo();
+      }
+
+      const insertPayload = {
+        ...payload,
+        numero_correlativo: idFormActual,
+        dominio: dominioLimpio,
+        foto_frontal_url: frontalUrl,
+        foto_lateral_url: lateralUrl,
+        foto_posterior_url: posteriorUrl,
+        fotos_metadata: metadata,
+      };
+
+      const { data, error } = await supabase
+        .from('relevamientos')
+        .insert([insertPayload])
+        .select()
+        .single();
+
+      if (!error && data) {
+        const list = [data as RelevamientoVehiculo, ...getLocalRelevamientos()];
+        localStorage.setItem(STORAGE_KEYS.RELEVAMIENTOS, JSON.stringify(list));
+        return data as RelevamientoVehiculo;
+      }
+
+      ultimoError = error?.message || 'Error desconocido en base de datos';
+      // Si es error de clave duplicada (23505), reintentar con el siguiente FSMU-XXXX
+      const isDuplicate =
+        error?.code === '23505' ||
+        ultimoError.toLowerCase().includes('duplicate') ||
+        ultimoError.toLowerCase().includes('unique');
+
+      if (!isDuplicate) {
+        throw new Error(`No se pudo guardar en Supabase: ${ultimoError}`);
+      }
+    }
+
+    throw new Error(
+      `No se pudo asignar un idForm único tras varios intentos: ${ultimoError}`
+    );
+  }
 
   const nuevoRegistro: RelevamientoVehiculo = {
     ...payload,
-    numero_correlativo: idFormFinal,
+    numero_correlativo: idFormActual,
     dominio: dominioLimpio,
     id: generateUUID(),
     foto_frontal_url: frontalUrl,
@@ -703,26 +753,6 @@ export async function guardarRelevamiento(
     fotos_metadata: metadata,
     created_at: new Date().toISOString(),
   };
-
-  const supabase = getSupabaseClient();
-  if (supabase) {
-    try {
-      const { id: _omitId, created_at: _omitCreated, ...insertPayload } =
-        nuevoRegistro;
-      const { data, error } = await supabase
-        .from('relevamientos')
-        .insert([insertPayload])
-        .select()
-        .single();
-      if (!error && data) {
-        const list = [data as RelevamientoVehiculo, ...getLocalRelevamientos()];
-        localStorage.setItem(STORAGE_KEYS.RELEVAMIENTOS, JSON.stringify(list));
-        return data as RelevamientoVehiculo;
-      }
-    } catch {
-      // Fallback local
-    }
-  }
 
   const list = [nuevoRegistro, ...getLocalRelevamientos()];
   localStorage.setItem(STORAGE_KEYS.RELEVAMIENTOS, JSON.stringify(list));

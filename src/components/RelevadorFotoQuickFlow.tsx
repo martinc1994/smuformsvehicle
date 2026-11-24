@@ -296,9 +296,8 @@ export const RelevadorFotoQuickFlow: React.FC<Props> = ({
                   (reg.foto_posterior_url ? 1 : 0);
 
                 return (
-                  <button
+                  <div
                     key={reg.id}
-                    type="button"
                     onClick={() => seleccionarVehiculo(reg)}
                     className={`text-left p-4 rounded-2xl border-2 transition cursor-pointer flex flex-col justify-between gap-3 ${
                       isSelected
@@ -332,7 +331,8 @@ export const RelevadorFotoQuickFlow: React.FC<Props> = ({
                         {reg.tipo_vehiculo}: {reg.marca} {reg.modelo}
                       </div>
                       <div className="text-xs text-slate-600 dark:text-slate-300">
-                        Color: <strong>{reg.color_predominante}</strong> • Estado:{' '}
+                        Color: <strong>{reg.color_predominante}</strong> • Año:{' '}
+                        <strong>{reg.anio_aproximado || 'S/D'}</strong> • Estado:{' '}
                         <strong>{reg.estado_general}</strong>
                       </div>
                       <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-1 truncate">
@@ -343,15 +343,32 @@ export const RelevadorFotoQuickFlow: React.FC<Props> = ({
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between pt-2 border-t border-slate-200/80 dark:border-slate-700/60 text-xs font-bold text-blue-700 dark:text-blue-400">
-                      <span>
-                        {isSelected
-                          ? 'Vehículo seleccionado abajo'
-                          : 'Tocar para verificar y cargar fotos'}
-                      </span>
-                      <ArrowRight className="w-4 h-4" />
+                    <div className="flex items-center justify-between gap-2 pt-2.5 border-t border-slate-200/80 dark:border-slate-700/60">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          seleccionarVehiculo(reg);
+                        }}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-extrabold transition cursor-pointer"
+                      >
+                        <Camera className="w-3.5 h-3.5" />
+                        {completo ? 'Ver / Editar Fotos' : 'Subir Fotos'}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onSelectPrint(reg);
+                        }}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#1B365D] hover:bg-[#132847] text-white text-xs font-bold transition cursor-pointer"
+                      >
+                        <Printer className="w-3.5 h-3.5" />
+                        Ver Ficha A4
+                      </button>
                     </div>
-                  </button>
+                  </div>
                 );
               })}
             </div>
