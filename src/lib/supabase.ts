@@ -2,11 +2,11 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { Parametro, RelevamientoVehiculo, Usuario, FotoComprimida } from '../types';
 
 const STORAGE_KEYS = {
-  SUPABASE_URL: 'smt_supabase_url',
-  SUPABASE_KEY: 'smt_supabase_anon_key',
-  USUARIOS: 'smt_usuarios_v1',
-  PARAMETROS: 'smt_parametros_v1',
-  RELEVAMIENTOS: 'smt_relevamientos_v1',
+  SUPABASE_URL: 'smu_supabase_url',
+  SUPABASE_KEY: 'smu_supabase_anon_key',
+  USUARIOS: 'smu_usuarios_v1',
+  PARAMETROS: 'smu_parametros_v1',
+  RELEVAMIENTOS: 'smu_relevamientos_v1',
 };
 
 // Semilla inicial de Usuarios con el administrador obligatorio MCastillo
@@ -36,10 +36,10 @@ const INITIAL_USUARIOS: Usuario[] = [
 // Semilla inicial de Parámetros Oficiales para San Miguel de Tucumán
 const INITIAL_PARAMETROS: Parametro[] = [
   // Dependencias que efectúan el secuestro
-  { id: 'dep-1', categoria: 'dependencia', valor: 'Dirección de Tránsito SMT', activo: true },
+  { id: 'dep-1', categoria: 'dependencia', valor: 'Dirección de Tránsito SMU', activo: true },
   { id: 'dep-2', categoria: 'dependencia', valor: 'Patrulla de Protección Ciudadana (PPC)', activo: true },
-  { id: 'dep-3', categoria: 'dependencia', valor: 'Dirección de Transporte Público SMT', activo: true },
-  { id: 'dep-4', categoria: 'dependencia', valor: 'Policía Vial — Operativo Conjunto SMT', activo: true },
+  { id: 'dep-3', categoria: 'dependencia', valor: 'Dirección de Transporte Público SMU', activo: true },
+  { id: 'dep-4', categoria: 'dependencia', valor: 'Policía Vial — Operativo Conjunto SMU', activo: true },
   { id: 'dep-5', categoria: 'dependencia', valor: 'Tribunal Municipal de Faltas', activo: true },
 
   // Sectores del Corralón Municipal
@@ -74,7 +74,7 @@ const INITIAL_PARAMETROS: Parametro[] = [
   { id: 'col-7', categoria: 'color', valor: 'Bordó', activo: true },
   { id: 'col-8', categoria: 'color', valor: 'Verde / Sin pintura', activo: true },
 
-  // Lugares / Avenidas frecuentes de secuestro en SMT
+  // Lugares / Avenidas frecuentes de secuestro en SMU
   { id: 'lug-1', categoria: 'lugar_secuestro', valor: 'Av. Mate de Luna y Av. Alem', activo: true },
   { id: 'lug-2', categoria: 'lugar_secuestro', valor: 'Av. 24 de Septiembre al 400 (Microcentro)', activo: true },
   { id: 'lug-3', categoria: 'lugar_secuestro', valor: 'Av. Sarmiento y Av. Avellaneda', activo: true },
@@ -109,9 +109,9 @@ function createDemoPhotoSvg(title: string, subtitle: string, bg: string): string
 
 const INITIAL_RELEVAMIENTOS: RelevamientoVehiculo[] = [
   {
-    id: 'rel-smt-0001',
+    id: 'rel-smu-0001',
     numero_correlativo: 'INV-2026-0001',
-    dependencia: 'Dirección de Tránsito SMT',
+    dependencia: 'Dirección de Tránsito SMU',
     numero_acta: 'ACTA-84920-T',
     fecha_ingreso: '2026-11-20',
     lugar_secuestro: 'Av. Mate de Luna y Av. Alem',
@@ -153,7 +153,7 @@ const INITIAL_RELEVAMIENTOS: RelevamientoVehiculo[] = [
     created_at: '2026-11-24T10:00:00.000Z',
   },
   {
-    id: 'rel-smt-0002',
+    id: 'rel-smu-0002',
     numero_correlativo: 'INV-2026-0002',
     dependencia: 'Patrulla de Protección Ciudadana (PPC)',
     numero_acta: 'ACTA-85104-T',

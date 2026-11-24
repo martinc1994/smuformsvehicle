@@ -300,7 +300,7 @@ export const RelevamientoForm: React.FC<Props> = ({
             Ficha Técnica de Relevamiento de Vehículo Secuestrado
           </h2>
           <p className="text-xs sm:text-sm text-blue-100 mt-0.5">
-            Corralón Municipal — Registro digital parametrizado con conversión fotográfica liviana WebP
+            Corralón Municipal — Registro digital de vehículos en Corralón
           </p>
         </div>
 
@@ -404,13 +404,13 @@ export const RelevamientoForm: React.FC<Props> = ({
             <input
               type="text"
               required
-              list="lugares-smt-list"
+              list="lugares-smu-list"
               placeholder="Ej: Av. Mate de Luna y Av. Alem"
               value={lugarSecuestro}
               onChange={(e) => setLugarSecuestro(e.target.value)}
               className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-            <datalist id="lugares-smt-list">
+            <datalist id="lugares-smu-list">
               {lugaresList.map((l) => (
                 <option key={l.id} value={l.valor} />
               ))}

@@ -26,8 +26,8 @@ import {
   Camera,
 } from 'lucide-react';
 
-const SESSION_KEY = 'smt_current_user_session';
-const THEME_KEY = 'smt_theme_dark';
+const SESSION_KEY = 'smu_current_user_session';
+const THEME_KEY = 'smu_theme_dark';
 
 export function App() {
   const [usuarioActual, setUsuarioActual] = useState<Usuario | null>(() => {
@@ -130,7 +130,7 @@ export function App() {
           {/* Identidad Institucional */}
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-[#1B365D] text-white flex items-center justify-center font-extrabold text-sm shadow">
-              SMT
+              SMU
             </div>
             <div>
               <div className="flex items-center gap-2">

@@ -36,10 +36,10 @@ CREATE TABLE IF NOT EXISTS public.parametros (
 INSERT INTO public.parametros (categoria, valor, activo)
 VALUES
   -- Dependencias
-  ('dependencia', 'Dirección de Tránsito SMT', true),
+  ('dependencia', 'Dirección de Tránsito SMU', true),
   ('dependencia', 'Patrulla de Protección Ciudadana (PPC)', true),
-  ('dependencia', 'Dirección de Transporte Público SMT', true),
-  ('dependencia', 'Policía Vial — Operativo Conjunto SMT', true),
+  ('dependencia', 'Dirección de Transporte Público SMU', true),
+  ('dependencia', 'Policía Vial — Operativo Conjunto SMU', true),
   ('dependencia', 'Tribunal Municipal de Faltas', true),
   -- Sectores del Corralón Municipal
   ('sector_corralon', 'Playa A — Sector Motos (Filas 1 a 10)', true),
@@ -70,7 +70,7 @@ VALUES
   ('color', 'Azul', true),
   ('color', 'Bordó', true),
   ('color', 'Verde / Sin pintura', true),
-  -- Lugares frecuentes de secuestro en vía pública SMT
+  -- Lugares frecuentes de secuestro en vía pública SMU
   ('lugar_secuestro', 'Av. Mate de Luna y Av. Alem', true),
   ('lugar_secuestro', 'Av. 24 de Septiembre al 400 (Microcentro)', true),
   ('lugar_secuestro', 'Av. Sarmiento y Av. Avellaneda', true),

@@ -54,7 +54,7 @@ export const LoginScreen: React.FC<Props> = ({
       <header className="w-full px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-[#1B365D] text-white flex items-center justify-center font-extrabold text-sm shadow-sm">
-            SMT
+            SMU
           </div>
           <div>
             <span className="block text-xs font-extrabold uppercase tracking-wider text-[#1B365D] dark:text-blue-400">
