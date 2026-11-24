@@ -263,6 +263,14 @@ export const PrintableFicha: React.FC<Props> = ({ registro, onClose, standalone 
                   {registro.numero_chasis || 'No visible / Sin datos'}
                 </td>
               </tr>
+              <tr>
+                <td className="bg-[#EBF0F7] px-2.5 py-1 border border-[#8EA9DB] font-medium">
+                  Observaciones
+                </td>
+                <td colSpan={3} className="bg-white px-2.5 py-1 border border-[#8EA9DB] text-[11px]">
+                  {registro.observaciones || 'Sin observaciones adicionales.'}
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -445,41 +453,6 @@ export const PrintableFicha: React.FC<Props> = ({ registro, onClose, standalone 
                   ) : (
                     <span className="text-[11px] italic text-slate-400">[ Vista posterior ]</span>
                   )}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        {/* SECCIÓN 5: OBSERVACIONES Y FIRMA DEL AGENTE */}
-        <div>
-          <div className="bg-[#1B365D] text-white px-2.5 py-1 flex items-center gap-2 text-xs font-bold uppercase">
-            <span className="inline-block w-1 h-3.5 bg-white"></span>
-            <span>5. OBSERVACIONES Y FIRMA DEL AGENTE</span>
-          </div>
-
-          <table className="w-full border-collapse border border-[#8EA9DB] text-[11.5px]">
-            <tbody>
-              <tr>
-                <td className="w-[58%] h-28 align-top bg-white p-2.5 border border-[#8EA9DB]">
-                  <div className="font-bold text-slate-900 mb-1">Observaciones:</div>
-                  <p className="text-[11px] text-slate-800 whitespace-pre-wrap leading-relaxed">
-                    {registro.observaciones || 'Sin observaciones adicionales.'}
-                  </p>
-                </td>
-                <td className="w-[42%] h-28 align-bottom bg-[#EBF0F7] p-3 border border-[#8EA9DB] text-center">
-                  <div className="mt-6 pt-1 border-t border-slate-700 w-4/5 mx-auto text-[10.5px] font-semibold text-slate-800">
-                    Firma y aclaración del agente relevador
-                  </div>
-                  <div className="text-[11px] font-bold text-[#1B365D] mt-0.5">
-                    {registro.agente_nombre}
-                  </div>
-                  <div className="text-[10.5px] text-slate-700 mt-0.5">
-                    Legajo N.º: <span className="font-semibold underline">{registro.agente_legajo}</span>
-                  </div>
-                  <div className="text-[10.5px] text-slate-700 mt-0.5">
-                    Fecha: <span className="font-semibold">{formatFechaDMY(registro.fecha_relevamiento)}</span>
-                  </div>
                 </td>
               </tr>
             </tbody>

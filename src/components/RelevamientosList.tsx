@@ -246,13 +246,6 @@ export const RelevamientosList: React.FC<Props> = ({
                       <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                       <span>Ingreso: {reg.fecha_ingreso || 'S/D'}</span>
                     </div>
-                    <div className="flex items-center gap-1.5 sm:col-span-2">
-                      <FileCheck2 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                      <span>
-                        Relevó: <strong>{reg.agente_nombre}</strong> (Leg.{' '}
-                        {reg.agente_legajo})
-                      </span>
-                    </div>
                   </div>
                 </div>
               </div>

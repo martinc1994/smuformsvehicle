@@ -650,14 +650,7 @@ export const RelevadorFotoQuickFlow: React.FC<Props> = ({
             </div>
 
             {/* Botón de confirmación del Relevador */}
-            <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="text-xs text-slate-500 dark:text-slate-400">
-                Agente Relevador que certifica las fotografías:{' '}
-                <strong className="text-slate-800 dark:text-slate-200">
-                  {usuarioActual.nombre_completo} (Legajo {usuarioActual.legajo})
-                </strong>
-              </div>
-
+            <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-end gap-4">
               <button
                 type="submit"
                 disabled={saving}
