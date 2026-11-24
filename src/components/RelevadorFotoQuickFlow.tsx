@@ -6,6 +6,7 @@ import {
 } from '../types';
 import {
   adjuntarFotosARelevamiento,
+  formatearDominioVisual,
   normalizarDominio,
   tieneLas3Fotos,
 } from '../lib/supabase';
@@ -63,16 +64,17 @@ export const RelevadorFotoQuickFlow: React.FC<Props> = ({
   const cleanSearch = normalizarDominio(queryPatente);
 
   const resultados = useMemo(() => {
+    const rawUpper = queryPatente.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
     return registros.filter((r) => {
-      const domNormalizado = normalizarDominio(r.dominio);
-      const actaNormalizada = normalizarDominio(r.numero_acta);
-      const corrNormalizado = normalizarDominio(r.numero_correlativo);
+      const domVisual = formatearDominioVisual(r.dominio);
+      const actaNormalizada = (r.numero_acta || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+      const corrNormalizado = (r.numero_correlativo || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
 
       const coincideBusqueda =
-        !cleanSearch ||
-        domNormalizado.includes(cleanSearch) ||
-        actaNormalizada.includes(cleanSearch) ||
-        corrNormalizado.includes(cleanSearch);
+        !rawUpper ||
+        domVisual.includes(rawUpper) ||
+        actaNormalizada.includes(rawUpper) ||
+        corrNormalizado.includes(rawUpper);
 
       if (!coincideBusqueda) return false;
 
@@ -81,7 +83,7 @@ export const RelevadorFotoQuickFlow: React.FC<Props> = ({
       }
       return true;
     });
-  }, [registros, cleanSearch, filtroPendientes]);
+  }, [registros, queryPatente, filtroPendientes]);
 
   const seleccionarVehiculo = (reg: RelevamientoVehiculo) => {
     setVehiculoActivo(reg);
@@ -185,7 +187,7 @@ export const RelevadorFotoQuickFlow: React.FC<Props> = ({
             Búsqueda Rápida por Patente y Carga Fotográfica en Predio
           </h2>
           <p className="text-xs sm:text-sm text-blue-100 mt-0.5">
-            Localice la ficha precargada por Data Entry ingresando la patente (sin espacios ni guiones), verifique los datos clave del vehículo y adjunte las 3 fotografías WebP.
+            Localice la ficha precargada por Data Entry ingresando la patente (sin espacios ni guiones), verifique los datos clave del vehículo y adjunte las 3 fotografías.
           </p>
         </div>
 
@@ -308,7 +310,7 @@ export const RelevadorFotoQuickFlow: React.FC<Props> = ({
                     <div className="flex items-start justify-between gap-2">
                       <div>
                         <span className="inline-block px-2.5 py-1 rounded-lg bg-slate-900 dark:bg-black text-white font-mono font-extrabold text-sm tracking-widest border border-slate-700">
-                          {reg.dominio || 'S/D'}
+                          {formatearDominioVisual(reg.dominio)}
                         </span>
                         <span className="ml-2 text-xs font-bold text-slate-500 dark:text-slate-400">
                           {reg.numero_correlativo}
@@ -388,7 +390,7 @@ export const RelevadorFotoQuickFlow: React.FC<Props> = ({
           <div className="bg-[#1B365D] text-white px-5 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <div className="px-3.5 py-1.5 rounded-xl bg-amber-400 text-slate-950 font-mono font-extrabold text-base sm:text-lg tracking-widest shadow">
-                {vehiculoActivo.dominio}
+                {formatearDominioVisual(vehiculoActivo.dominio)}
               </div>
               <div>
                 <div className="text-xs text-blue-200 font-bold uppercase tracking-wider">

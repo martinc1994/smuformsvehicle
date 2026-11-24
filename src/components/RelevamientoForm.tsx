@@ -11,6 +11,7 @@ import {
 import {
   generarSiguienteCorrelativo,
   guardarRelevamiento,
+  formatearDominioVisual,
 } from '../lib/supabase';
 import { compressImageToWebP } from '../utils/imageCompressor';
 import {
@@ -282,7 +283,7 @@ export const RelevamientoForm: React.FC<Props> = ({
           modelo: modelo.trim() || 'S/D',
           anio_aproximado: anioAproximado.trim(),
           color_predominante: colorPredominante.trim(),
-          dominio: dominio.trim().toUpperCase() || 'SIN DOMINIO',
+          dominio: dominio.trim().toUpperCase() || 'SINDOMINIO',
           cantidad_ruedas: Number(cantidadRuedas) || 0,
           numero_motor: numeroMotor.trim().toUpperCase(),
           numero_chasis: numeroChasis.trim().toUpperCase(),
@@ -416,7 +417,10 @@ export const RelevamientoForm: React.FC<Props> = ({
                   {ultimoGuardado.modelo}
                 </strong>{' '}
                 • Dominio:{' '}
-                <strong className="font-mono">{ultimoGuardado.dominio}</strong>. Ya se encuentra disponible en la sección{' '}
+                <strong className="font-mono">
+                  {formatearDominioVisual(ultimoGuardado.dominio)}
+                </strong>
+                . Ya se encuentra disponible en la sección{' '}
                 <em>"2. Relevamiento Fotográfico en Predio"</em>. El formulario quedó limpio para cargar el siguiente vehículo.
               </p>
             </div>
@@ -685,11 +689,11 @@ export const RelevamientoForm: React.FC<Props> = ({
             {/* Dominio (Patente - No obligatorio) */}
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1.5">
-                Dominio (Patente sin espacios ni guiones)
+                Dominio (Patente sin espacios ni guiones — Único si posee)
               </label>
               <input
                 type="text"
-                placeholder="Ej: A148KZP (Dejar vacío si no tiene chapa)"
+                placeholder="Ej: A148KZP (Vacío = SINDOMINIO)"
                 value={dominio}
                 onChange={(e) =>
                   setDominio(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''))

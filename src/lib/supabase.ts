@@ -628,9 +628,25 @@ async function uploadPhotoIfSupabaseAvailable(
 }
 
 export function normalizarDominio(dom: string): string {
-  return (dom || '')
+  const clean = (dom || '')
     .toUpperCase()
     .replace(/[^A-Z0-9]/g, '');
+
+  if (
+    !clean ||
+    clean === 'SINDOMINIO' ||
+    clean === 'SD' ||
+    clean === 'SINDOM' ||
+    clean === 'SINPATENTE'
+  ) {
+    return '';
+  }
+  return clean;
+}
+
+export function formatearDominioVisual(dom: string | null | undefined): string {
+  const clean = normalizarDominio(dom || '');
+  return clean || 'SINDOMINIO';
 }
 
 export function tieneLas3Fotos(reg: RelevamientoVehiculo): boolean {
@@ -692,7 +708,21 @@ export async function guardarRelevamiento(
     });
   }
 
-  const dominioLimpio = normalizarDominio(payload.dominio) || 'SIN DOMINIO';
+  const dominioReal = normalizarDominio(payload.dominio);
+  const dominioLimpio = dominioReal || 'SINDOMINIO';
+
+  // Validar que un dominio real completado no se repita en otro vehículo ya registrado
+  const registrosExistentes = await fetchRelevamientos();
+  if (dominioReal) {
+    const duplicado = registrosExistentes.find(
+      (r) => normalizarDominio(r.dominio) === dominioReal
+    );
+    if (duplicado) {
+      throw new Error(
+        `El dominio "${dominioReal}" ya se encuentra registrado en el formulario ${duplicado.numero_correlativo} (${duplicado.tipo_vehiculo} ${duplicado.marca} ${duplicado.modelo}). No se pueden repetir dominios.`
+      );
+    }
+  }
 
   const supabase = getSupabaseClient();
   if (supabase) {

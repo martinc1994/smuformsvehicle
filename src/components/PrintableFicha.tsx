@@ -1,6 +1,7 @@
 import React from 'react';
 import { RelevamientoVehiculo, TipoVehiculo, EstadoGeneral, TipoFotoCheck } from '../types';
-import { Printer, ArrowLeft, Download } from 'lucide-react';
+import { formatearDominioVisual } from '../lib/supabase';
+import { Printer, ArrowLeft } from 'lucide-react';
 
 interface Props {
   registro: RelevamientoVehiculo;
@@ -238,7 +239,7 @@ export const PrintableFicha: React.FC<Props> = ({ registro, onClose, standalone 
                   Dominio (patente)
                 </td>
                 <td className="bg-white px-2.5 py-1 border border-[#8EA9DB] font-bold uppercase tracking-wider">
-                  {registro.dominio || 'SIN DOMINIO'}
+                  {formatearDominioVisual(registro.dominio)}
                 </td>
                 <td className="bg-[#EBF0F7] px-2.5 py-1 border border-[#8EA9DB] font-medium">
                   Cantidad de ruedas existentes

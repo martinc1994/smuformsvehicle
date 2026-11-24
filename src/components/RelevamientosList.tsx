@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
 import { RelevamientoVehiculo, Usuario } from '../types';
-import { eliminarRelevamiento, normalizarDominio, tieneLas3Fotos } from '../lib/supabase';
+import {
+  eliminarRelevamiento,
+  formatearDominioVisual,
+  normalizarDominio,
+  tieneLas3Fotos,
+} from '../lib/supabase';
 import {
   Search,
   Printer,
@@ -195,7 +200,7 @@ export const RelevamientosList: React.FC<Props> = ({
                       </h4>
                     </div>
                     <div className="px-3 py-1 rounded-lg bg-slate-900 dark:bg-slate-800 text-white font-mono font-extrabold text-xs tracking-widest border border-slate-700">
-                      {reg.dominio || 'S/DOM'}
+                      {formatearDominioVisual(reg.dominio)}
                     </div>
                   </div>
 

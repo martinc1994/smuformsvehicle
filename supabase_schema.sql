@@ -114,7 +114,7 @@ CREATE TABLE IF NOT EXISTS public.relevamientos (
   modelo TEXT DEFAULT 'S/D',
   anio_aproximado TEXT NOT NULL DEFAULT 'S/D',
   color_predominante TEXT NOT NULL,
-  dominio TEXT DEFAULT 'SIN DOMINIO',
+  dominio TEXT DEFAULT 'SINDOMINIO',
   cantidad_ruedas INTEGER NOT NULL DEFAULT 4,
   numero_motor TEXT DEFAULT '',
   numero_chasis TEXT DEFAULT '',
@@ -177,6 +177,11 @@ ON CONFLICT (id) DO UPDATE SET
 
 -- Índice rápido para búsqueda instantánea por patente normalizada (sin espacios ni guiones) en el predio
 CREATE INDEX IF NOT EXISTS idx_relevamientos_dominio ON public.relevamientos (dominio);
+
+-- Índice único parcial: impide repetir patentes reales, pero permite múltiples vehículos con 'SINDOMINIO'
+CREATE UNIQUE INDEX IF NOT EXISTS idx_relevamientos_dominio_unico
+  ON public.relevamientos (dominio)
+  WHERE dominio IS NOT NULL AND dominio <> '' AND dominio <> 'SINDOMINIO';
 
 DROP POLICY IF EXISTS "Acceso publico a fotos de vehiculos" ON storage.objects;
 CREATE POLICY "Acceso publico a fotos de vehiculos"
