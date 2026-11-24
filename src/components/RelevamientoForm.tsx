@@ -73,7 +73,7 @@ export const RelevamientoForm: React.FC<Props> = ({
   const todayISO = new Date().toISOString().split('T')[0];
 
   // 1. Datos de Registro e Ingreso
-  const [numeroCorrelativo, setNumeroCorrelativo] = useState('INV-2026-0002');
+  const [numeroCorrelativo, setNumeroCorrelativo] = useState('FSMU-1000');
   const [dependencia, setDependencia] = useState('');
   const [numeroActa, setNumeroActa] = useState('');
   const [fechaIngreso, setFechaIngreso] = useState(todayISO);
@@ -306,7 +306,7 @@ export const RelevamientoForm: React.FC<Props> = ({
 
         <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl px-4 py-2.5 text-right shrink-0">
           <span className="block text-[11px] uppercase tracking-wider text-blue-200 font-medium">
-            N.º Correlativo Inventario
+            idForm (Autoincremental)
           </span>
           <span className="text-lg font-extrabold tracking-wider text-white">
             {numeroCorrelativo}
@@ -333,17 +333,18 @@ export const RelevamientoForm: React.FC<Props> = ({
         </div>
 
         <div className="p-5 sm:p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {/* N° Correlativo */}
+          {/* idForm Autoincremental */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1.5">
-              N.º Correlativo de Inventario *
+              idForm (Autoincremental) *
             </label>
             <input
               type="text"
               required
+              readOnly
               value={numeroCorrelativo}
-              onChange={(e) => setNumeroCorrelativo(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 font-bold text-[#1B365D] dark:text-blue-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              title="Generado automáticamente por el sistema en formato FSMU-1000"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800/90 font-extrabold font-mono text-[#1B365D] dark:text-blue-300 text-sm cursor-not-allowed focus:outline-none"
             />
           </div>
 

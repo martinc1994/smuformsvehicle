@@ -122,8 +122,8 @@ export const PrintableFicha: React.FC<Props> = ({ registro, onClose, standalone 
           <table className="w-full border-collapse border border-[#8EA9DB] text-[11.5px]">
             <tbody>
               <tr>
-                <td className="w-[38%] bg-[#1B365D] text-white font-bold px-2.5 py-1.5 border border-[#8EA9DB] text-center uppercase">
-                  N.º CORRELATIVO DE INVENTARIO
+                <td className="w-[38%] bg-[#1B365D] text-white font-bold px-2.5 py-1.5 border border-[#8EA9DB] text-center">
+                  idForm
                 </td>
                 <td className="w-[62%] bg-white font-bold text-sm text-[#1B365D] px-3 py-1.5 border border-[#8EA9DB]">
                   {registro.numero_correlativo}

@@ -87,10 +87,16 @@ VALUES
   ('faltante_comun', 'Parabrisas astillado / cristales rotos', true)
 ON CONFLICT (categoria, valor) DO NOTHING;
 
--- 3. Tabla Principal de Relevamientos de Vehículos Secuestrados
+-- 3. Secuencia Autoincremental para idForm (Inicia en FSMU-1000)
+CREATE SEQUENCE IF NOT EXISTS public.relevamientos_idform_seq
+  START WITH 1000
+  INCREMENT BY 1
+  MINVALUE 1000;
+
+-- 4. Tabla Principal de Relevamientos de Vehículos Secuestrados
 CREATE TABLE IF NOT EXISTS public.relevamientos (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  numero_correlativo TEXT UNIQUE NOT NULL,
+  numero_correlativo TEXT UNIQUE NOT NULL DEFAULT ('FSMU-' || nextval('public.relevamientos_idform_seq')::text),
   
   -- 1. Datos de Registro e Ingreso
   dependencia TEXT NOT NULL,

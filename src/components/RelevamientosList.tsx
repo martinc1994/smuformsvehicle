@@ -92,7 +92,7 @@ export const RelevamientosList: React.FC<Props> = ({
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            placeholder="Buscar por N.º Correlativo, Patente (Dominio), Acta, Marca, Modelo o Agente..."
+            placeholder="Buscar por idForm (FSMU-1000), Patente (Dominio), Acta, Marca, Modelo o Agente..."
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
             className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"

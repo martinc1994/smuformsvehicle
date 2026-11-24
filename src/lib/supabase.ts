@@ -100,7 +100,7 @@ function createDemoPhotoSvg(title: string, subtitle: string, bg: string): string
 const INITIAL_RELEVAMIENTOS: RelevamientoVehiculo[] = [
   {
     id: 'rel-smu-0001',
-    numero_correlativo: 'INV-2026-0001',
+    numero_correlativo: 'FSMU-1000',
     dependencia: 'Dirección de Tránsito SMU',
     numero_acta: 'ACTA-84920-T',
     fecha_ingreso: '2026-11-20',
@@ -144,7 +144,7 @@ const INITIAL_RELEVAMIENTOS: RelevamientoVehiculo[] = [
   },
   {
     id: 'rel-smu-0002',
-    numero_correlativo: 'INV-2026-0002',
+    numero_correlativo: 'FSMU-1001',
     dependencia: 'Patrulla de Protección Ciudadana (PPC)',
     numero_acta: 'ACTA-85104-T',
     fecha_ingreso: '2026-11-22',
@@ -285,7 +285,27 @@ function getLocalRelevamientos(): RelevamientoVehiculo[] {
     return INITIAL_RELEVAMIENTOS;
   }
   try {
-    return JSON.parse(raw);
+    const parsed: RelevamientoVehiculo[] = JSON.parse(raw);
+    let changed = false;
+    const migrated = parsed.map((item, idx) => {
+      if (item.numero_correlativo === 'INV-2026-0001') {
+        changed = true;
+        return { ...item, numero_correlativo: 'FSMU-1000' };
+      }
+      if (item.numero_correlativo === 'INV-2026-0002') {
+        changed = true;
+        return { ...item, numero_correlativo: 'FSMU-1001' };
+      }
+      if (item.numero_correlativo?.startsWith('INV-')) {
+        changed = true;
+        return { ...item, numero_correlativo: `FSMU-${1000 + idx}` };
+      }
+      return item;
+    });
+    if (changed) {
+      localStorage.setItem(STORAGE_KEYS.RELEVAMIENTOS, JSON.stringify(migrated));
+    }
+    return migrated;
   } catch {
     return INITIAL_RELEVAMIENTOS;
   }
@@ -552,9 +572,25 @@ export async function fetchRelevamientos(): Promise<RelevamientoVehiculo[]> {
 
 export async function generarSiguienteCorrelativo(): Promise<string> {
   const lista = await fetchRelevamientos();
-  const year = new Date().getFullYear();
-  const nextNumber = lista.length + 1;
-  return `INV-${year}-${String(nextNumber).padStart(4, '0')}`;
+  let maxNumber = 999; // Para que el primer registro sea FSMU-1000
+
+  for (const item of lista) {
+    const corr = (item.numero_correlativo || '').trim().toUpperCase();
+    const match = corr.match(/^FSMU-(\d+)$/);
+    if (match) {
+      const num = parseInt(match[1], 10);
+      if (!isNaN(num) && num > maxNumber) {
+        maxNumber = num;
+      }
+    }
+  }
+
+  // Si hay registros previos con otro formato pero ninguno FSMU-XXXX aún, arrancar en 1000 + cantidad
+  if (maxNumber === 999 && lista.length > 0) {
+    maxNumber = 999 + lista.length;
+  }
+
+  return `FSMU-${maxNumber + 1}`;
 }
 
 async function uploadPhotoIfSupabaseAvailable(
@@ -651,11 +687,14 @@ export async function guardarRelevamiento(
   }
 
   const dominioLimpio = normalizarDominio(payload.dominio) || 'S/D';
+  const idFormFinal =
+    payload.numero_correlativo?.trim() || (await generarSiguienteCorrelativo());
 
   const nuevoRegistro: RelevamientoVehiculo = {
     ...payload,
+    numero_correlativo: idFormFinal,
     dominio: dominioLimpio,
-    id: crypto.randomUUID ? crypto.randomUUID() : `rel-${Date.now()}`,
+    id: generateUUID(),
     foto_frontal_url: frontalUrl,
     foto_lateral_url: lateralUrl,
     foto_posterior_url: posteriorUrl,
@@ -666,9 +705,11 @@ export async function guardarRelevamiento(
   const supabase = getSupabaseClient();
   if (supabase) {
     try {
+      const { id: _omitId, created_at: _omitCreated, ...insertPayload } =
+        nuevoRegistro;
       const { data, error } = await supabase
         .from('relevamientos')
-        .insert([nuevoRegistro])
+        .insert([insertPayload])
         .select()
         .single();
       if (!error && data) {
