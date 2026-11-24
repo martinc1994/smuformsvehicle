@@ -607,20 +607,34 @@ export const RelevadorFotoQuickFlow: React.FC<Props> = ({
                                 className="w-full h-full object-cover"
                               />
                             </div>
-                            <div className="flex items-center justify-between text-[11px]">
-                              <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 font-bold text-slate-700 dark:text-slate-200 cursor-pointer">
-                                <Camera className="w-3.5 h-3.5" />
-                                Reemplazar foto
-                                <input
-                                  type="file"
-                                  accept="image/*"
-                                  capture="environment"
-                                  onChange={(e) =>
-                                    handleFileUpload(e, box.slot, box.title)
-                                  }
-                                  className="hidden"
-                                />
-                              </label>
+                            <div className="flex flex-wrap items-center justify-between gap-2 text-[11px]">
+                              <div className="flex items-center gap-1.5">
+                                <label className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 font-bold text-white cursor-pointer">
+                                  <Camera className="w-3.5 h-3.5" />
+                                  Cámara
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    capture="environment"
+                                    onChange={(e) =>
+                                      handleFileUpload(e, box.slot, box.title)
+                                    }
+                                    className="hidden"
+                                  />
+                                </label>
+                                <label className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 font-bold text-slate-700 dark:text-slate-200 cursor-pointer">
+                                  <ImageIcon className="w-3.5 h-3.5" />
+                                  Galería
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={(e) =>
+                                      handleFileUpload(e, box.slot, box.title)
+                                    }
+                                    className="hidden"
+                                  />
+                                </label>
+                              </div>
 
                               {box.state && (
                                 <button
@@ -635,29 +649,54 @@ export const RelevadorFotoQuickFlow: React.FC<Props> = ({
                             </div>
                           </div>
                         ) : (
-                          <label className="w-full h-full min-h-[180px] flex flex-col items-center justify-center text-center cursor-pointer group p-4">
-                            <div className="w-14 h-14 rounded-2xl bg-blue-600 text-white flex items-center justify-center mb-3 shadow-md group-hover:scale-105 transition">
-                              <Camera className="w-7 h-7" />
-                            </div>
-                            <span className="text-sm font-extrabold text-slate-800 dark:text-slate-100 group-hover:text-blue-600">
-                              Abrir Cámara / Subir Foto
-                            </span>
-                            <span className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                          <div className="w-full h-full min-h-[180px] flex flex-col items-center justify-center text-center p-3">
+                            <span className="text-xs font-bold text-slate-600 dark:text-slate-300 mb-3">
                               {box.title}
                             </span>
+
+                            <div className="grid grid-cols-2 gap-2.5 w-full">
+                              <label className="flex flex-col items-center justify-center p-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-sm cursor-pointer transition">
+                                <Camera className="w-6 h-6 mb-1.5" />
+                                <span className="text-xs font-extrabold">
+                                  Tomar Foto
+                                </span>
+                                <span className="text-[10px] text-blue-100">
+                                  Abrir Cámara
+                                </span>
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  capture="environment"
+                                  onChange={(e) =>
+                                    handleFileUpload(e, box.slot, box.title)
+                                  }
+                                  className="hidden"
+                                />
+                              </label>
+
+                              <label className="flex flex-col items-center justify-center p-3 rounded-xl bg-slate-200/80 dark:bg-slate-800 hover:bg-slate-300/70 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 shadow-sm cursor-pointer transition">
+                                <ImageIcon className="w-6 h-6 mb-1.5 text-blue-600 dark:text-blue-400" />
+                                <span className="text-xs font-extrabold">
+                                  Abrir Galería
+                                </span>
+                                <span className="text-[10px] text-slate-500 dark:text-slate-400">
+                                  Elegir Archivo
+                                </span>
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={(e) =>
+                                    handleFileUpload(e, box.slot, box.title)
+                                  }
+                                  className="hidden"
+                                />
+                              </label>
+                            </div>
+
                             <span className="mt-3 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 text-[11px] font-bold">
                               Compresión WebP automática (~60 KB)
                             </span>
-                            <input
-                              type="file"
-                              accept="image/*"
-                              capture="environment"
-                              onChange={(e) =>
-                                handleFileUpload(e, box.slot, box.title)
-                              }
-                              className="hidden"
-                            />
-                          </label>
+                          </div>
                         )}
                       </div>
                     </div>
