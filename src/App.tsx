@@ -208,7 +208,7 @@ export function App() {
             }`}
           >
             <FilePlus2 className="w-4 h-4" />
-            1. Carga Ficha (Data Entry)
+            1. Carga Ficha
           </button>
 
           <button
@@ -220,7 +220,7 @@ export function App() {
             }`}
           >
             <Camera className="w-4 h-4" />
-            2. Relevamiento Fotográfico en Predio (
+            2. Relevamiento Fotográfico (
             {relevamientos.filter((r) => !tieneLas3Fotos(r)).length} pendientes)
           </button>
 
@@ -233,7 +233,7 @@ export function App() {
             }`}
           >
             <FolderKanban className="w-4 h-4" />
-            Expedientes ({relevamientos.length})
+            Vehículos ({relevamientos.length})
           </button>
 
           {registroSeleccionado && (

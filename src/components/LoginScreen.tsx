@@ -93,10 +93,10 @@ export const LoginScreen: React.FC<Props> = ({
               <ShieldCheck className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-lg font-extrabold tracking-tight uppercase">
-              Sistema de Relevamiento Vehicular
+              Relevamiento Vehicular
             </h1>
             <p className="text-xs text-blue-100 mt-1">
-              Corralón Municipal — Acceso para Administradores y Agentes Relevadores
+              Corralón Municipal — Año 2026
             </p>
           </div>
 

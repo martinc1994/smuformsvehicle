@@ -1158,7 +1158,7 @@ export const RelevamientoForm: React.FC<Props> = ({
             <>
               <Save className="w-4 h-4" />
               {totalFotosCargadas < 3
-                ? 'Guardar Ficha (Dejar Pendiente de Fotos)'
+                ? 'Guardar Ficha'
                 : 'Guardar Relevamiento Completo y Ver Ficha A4'}
             </>
           )}
