@@ -74,11 +74,11 @@ export const RelevamientoForm: React.FC<Props> = ({
 
   // 1. Datos de Registro e Ingreso
   const [numeroCorrelativo, setNumeroCorrelativo] = useState('FSMU-1000');
-  const [dependencia, setDependencia] = useState('');
+  const [dependencia, setDependencia] = useState('Dirección Operativa de Tránsito');
   const [numeroActa, setNumeroActa] = useState('');
-  const [fechaIngreso, setFechaIngreso] = useState(todayISO);
+  const [fechaIngreso, setFechaIngreso] = useState('');
   const [lugarSecuestro, setLugarSecuestro] = useState('');
-  const [sectorCorralon, setSectorCorralon] = useState('');
+  const [sectorCorralon, setSectorCorralon] = useState('No especificado');
 
   // 2. Identificación del Vehículo
   const [tipoVehiculo, setTipoVehiculo] = useState<TipoVehiculo>('Motocicleta');
@@ -123,13 +123,35 @@ export const RelevamientoForm: React.FC<Props> = ({
   const [saving, setSaving] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // Filtrar catálogos parametrizados
-  const dependenciasList = parametros.filter(
+  // Filtrar catálogos parametrizados y garantizar que las opciones predeterminadas estén siempre presentes
+  const dependenciasRaw = parametros.filter(
     (p) => p.categoria === 'dependencia' && p.activo
   );
-  const sectoresList = parametros.filter(
+  const dependenciasList: Parametro[] = [
+    {
+      id: 'dep-default-operativa',
+      categoria: 'dependencia',
+      valor: 'Dirección Operativa de Tránsito',
+      activo: true,
+    },
+    ...dependenciasRaw.filter(
+      (d) => d.valor !== 'Dirección Operativa de Tránsito'
+    ),
+  ];
+
+  const sectoresRaw = parametros.filter(
     (p) => p.categoria === 'sector_corralon' && p.activo
   );
+  const sectoresList: Parametro[] = [
+    {
+      id: 'sec-default-no-especificado',
+      categoria: 'sector_corralon',
+      valor: 'No especificado',
+      activo: true,
+    },
+    ...sectoresRaw.filter((s) => s.valor !== 'No especificado'),
+  ];
+
   const marcasList = parametros.filter((p) => p.categoria === 'marca' && p.activo);
   const coloresList = parametros.filter((p) => p.categoria === 'color' && p.activo);
   const lugaresList = parametros.filter(
@@ -141,11 +163,11 @@ export const RelevamientoForm: React.FC<Props> = ({
 
   useEffect(() => {
     generarSiguienteCorrelativo().then((corr) => setNumeroCorrelativo(corr));
-    if (dependenciasList.length > 0 && !dependencia) {
-      setDependencia(dependenciasList[0].valor);
+    if (!dependencia) {
+      setDependencia('Dirección Operativa de Tránsito');
     }
-    if (sectoresList.length > 0 && !sectorCorralon) {
-      setSectorCorralon(sectoresList[0].valor);
+    if (!sectorCorralon) {
+      setSectorCorralon('No especificado');
     }
   }, [parametros]);
 
@@ -221,16 +243,16 @@ export const RelevamientoForm: React.FC<Props> = ({
     e.preventDefault();
     setErrorMsg(null);
 
-    if (!dependencia.trim() || !numeroActa.trim() || !lugarSecuestro.trim() || !sectorCorralon.trim()) {
+    if (!dependencia.trim()) {
       setErrorMsg(
-        'Por favor complete todos los campos obligatorios de la Sección 1 (Datos de Registro e Ingreso).'
+        'Por favor seleccione la Dependencia que efectuó el secuestro en la Sección 1.'
       );
       return;
     }
 
-    if (!marca.trim() || !modelo.trim() || !colorPredominante.trim()) {
+    if (!marca.trim() || !anioAproximado.trim() || !colorPredominante.trim()) {
       setErrorMsg(
-        'Por favor complete Marca, Modelo y Color predominante en la Sección 2 (Identificación del Vehículo).'
+        'Por favor complete Marca, Año aproximado y Color predominante en la Sección 2 (Identificación del Vehículo).'
       );
       return;
     }
@@ -240,18 +262,18 @@ export const RelevamientoForm: React.FC<Props> = ({
       const nuevo = await guardarRelevamiento(
         {
           numero_correlativo: numeroCorrelativo.trim(),
-          dependencia: dependencia.trim(),
-          numero_acta: numeroActa.trim().toUpperCase(),
-          fecha_ingreso: fechaIngreso,
-          lugar_secuestro: lugarSecuestro.trim(),
-          sector_corralon: sectorCorralon.trim(),
+          dependencia: dependencia.trim() || 'Dirección Operativa de Tránsito',
+          numero_acta: numeroActa.trim().toUpperCase() || 'S/D',
+          fecha_ingreso: fechaIngreso || null,
+          lugar_secuestro: lugarSecuestro.trim() || 'No especificado',
+          sector_corralon: sectorCorralon.trim() || 'No especificado',
           tipo_vehiculo: tipoVehiculo,
           tipo_vehiculo_otro: tipoVehiculo === 'Otro' ? tipoVehiculoOtro.trim() : '',
           marca: marca.trim(),
-          modelo: modelo.trim(),
-          anio_aproximado: anioAproximado.trim() || 'S/D',
+          modelo: modelo.trim() || 'S/D',
+          anio_aproximado: anioAproximado.trim(),
           color_predominante: colorPredominante.trim(),
-          dominio: dominio.trim().toUpperCase() || 'S/D',
+          dominio: dominio.trim().toUpperCase() || 'SIN DOMINIO',
           cantidad_ruedas: Number(cantidadRuedas) || 0,
           numero_motor: numeroMotor.trim().toUpperCase(),
           numero_chasis: numeroChasis.trim().toUpperCase(),
@@ -368,45 +390,42 @@ export const RelevamientoForm: React.FC<Props> = ({
             </select>
           </div>
 
-          {/* Número de acta */}
+          {/* Número de acta (No obligatorio) */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1.5">
-              Número de Acta de Infracción o Secuestro *
+              Número de Acta de Infracción o Secuestro
             </label>
             <input
               type="text"
-              required
-              placeholder="Ej: ACTA-84920-T"
+              placeholder="Ej: ACTA-84920-T (Opcional)"
               value={numeroActa}
               onChange={(e) => setNumeroActa(e.target.value)}
               className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm uppercase font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
-          {/* Fecha de ingreso al corralón */}
+          {/* Fecha de ingreso al corralón (No obligatorio) */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1.5">
-              Fecha de Ingreso al Corralón *
+              Fecha de Ingreso al Corralón
             </label>
             <input
               type="date"
-              required
               value={fechaIngreso}
               onChange={(e) => setFechaIngreso(e.target.value)}
               className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
-          {/* Lugar del secuestro */}
+          {/* Lugar del secuestro (No obligatorio) */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1.5">
-              Lugar del Secuestro (Vía Pública) *
+              Lugar del Secuestro (Vía Pública)
             </label>
             <input
               type="text"
-              required
               list="lugares-smu-list"
-              placeholder="Ej: Av. Mate de Luna y Av. Alem"
+              placeholder="Ej: Av. Mate de Luna y Av. Alem (Opcional)"
               value={lugarSecuestro}
               onChange={(e) => setLugarSecuestro(e.target.value)}
               className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -418,18 +437,16 @@ export const RelevamientoForm: React.FC<Props> = ({
             </datalist>
           </div>
 
-          {/* Sector y ubicación dentro del corralón */}
+          {/* Sector y ubicación dentro del corralón (No obligatorio, default "No especificado") */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1.5">
-              Sector y Ubicación dentro del Corralón *
+              Sector y Ubicación dentro del Corralón
             </label>
             <select
-              required
               value={sectorCorralon}
               onChange={(e) => setSectorCorralon(e.target.value)}
               className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="">Seleccione sector del corralón...</option>
               {sectoresList.map((s) => (
                 <option key={s.id} value={s.valor}>
                   {s.valor}
@@ -492,7 +509,7 @@ export const RelevamientoForm: React.FC<Props> = ({
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {/* Marca */}
+            {/* Marca (Obligatorio) */}
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1.5">
                 Marca *
@@ -513,28 +530,28 @@ export const RelevamientoForm: React.FC<Props> = ({
               </datalist>
             </div>
 
-            {/* Modelo */}
+            {/* Modelo (No obligatorio) */}
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1.5">
-                Modelo *
+                Modelo
               </label>
               <input
                 type="text"
-                required
-                placeholder="Ej: Wave 110S / Gol Trend"
+                placeholder="Ej: Wave 110S / Gol Trend (Opcional)"
                 value={modelo}
                 onChange={(e) => setModelo(e.target.value)}
                 className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
-            {/* Año aproximado */}
+            {/* Año aproximado (Obligatorio) */}
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1.5">
-                Año Aproximado
+                Año Aproximado *
               </label>
               <input
                 type="text"
+                required
                 placeholder="Ej: 2021 o S/D"
                 value={anioAproximado}
                 onChange={(e) => setAnioAproximado(e.target.value)}
@@ -542,7 +559,7 @@ export const RelevamientoForm: React.FC<Props> = ({
               />
             </div>
 
-            {/* Color predominante */}
+            {/* Color predominante (Obligatorio) */}
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1.5">
                 Color Predominante *
@@ -563,14 +580,14 @@ export const RelevamientoForm: React.FC<Props> = ({
               </datalist>
             </div>
 
-            {/* Dominio (Patente) */}
+            {/* Dominio (Patente - No obligatorio) */}
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1.5">
-                Dominio (Patente sin espacios ni guiones) *
+                Dominio (Patente sin espacios ni guiones)
               </label>
               <input
                 type="text"
-                placeholder="Ej: A148KZP o AC452MK (o SD si no posee)"
+                placeholder="Ej: A148KZP (Dejar vacío si no tiene chapa)"
                 value={dominio}
                 onChange={(e) =>
                   setDominio(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''))
@@ -595,31 +612,45 @@ export const RelevamientoForm: React.FC<Props> = ({
               />
             </div>
 
-            {/* Número de motor */}
+            {/* Número de motor (No obligatorio) */}
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1.5">
                 Número de Motor
               </label>
               <input
                 type="text"
-                placeholder="N.º de serie de motor (o S/V)"
+                placeholder="N.º de serie de motor (Opcional)"
                 value={numeroMotor}
                 onChange={(e) => setNumeroMotor(e.target.value)}
                 className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm font-mono uppercase focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
-            {/* Número de chasis */}
+            {/* Número de chasis (No obligatorio) */}
             <div className="sm:col-span-2">
               <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1.5">
                 Número de Chasis / Cuadro
               </label>
               <input
                 type="text"
-                placeholder="Código VIN / N.º de cuadro o chasis"
+                placeholder="Código VIN / N.º de cuadro o chasis (Opcional)"
                 value={numeroChasis}
                 onChange={(e) => setNumeroChasis(e.target.value)}
                 className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm font-mono uppercase focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            {/* Observaciones (Agregado inmediatamente después de Número de Chasis) */}
+            <div className="sm:col-span-2 lg:col-span-3">
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1.5">
+                Observaciones
+              </label>
+              <textarea
+                rows={2}
+                placeholder="Observaciones adicionales registradas en la ficha física (Opcional)..."
+                value={observaciones}
+                onChange={(e) => setObservaciones(e.target.value)}
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </div>

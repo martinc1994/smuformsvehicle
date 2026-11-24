@@ -26,6 +26,7 @@ const INITIAL_USUARIOS: Usuario[] = [
 // Semilla inicial de Parámetros Oficiales para San Miguel de Tucumán
 const INITIAL_PARAMETROS: Parametro[] = [
   // Dependencias que efectúan el secuestro
+  { id: 'dep-0', categoria: 'dependencia', valor: 'Dirección Operativa de Tránsito', activo: true },
   { id: 'dep-1', categoria: 'dependencia', valor: 'Dirección de Tránsito SMU', activo: true },
   { id: 'dep-2', categoria: 'dependencia', valor: 'Patrulla de Protección Ciudadana (PPC)', activo: true },
   { id: 'dep-3', categoria: 'dependencia', valor: 'Dirección de Transporte Público SMU', activo: true },
@@ -33,6 +34,7 @@ const INITIAL_PARAMETROS: Parametro[] = [
   { id: 'dep-5', categoria: 'dependencia', valor: 'Tribunal Municipal de Faltas', activo: true },
 
   // Sectores del Corralón Municipal
+  { id: 'sec-0', categoria: 'sector_corralon', valor: 'No especificado', activo: true },
   { id: 'sec-1', categoria: 'sector_corralon', valor: 'Playa A — Sector Motos (Filas 1 a 10)', activo: true },
   { id: 'sec-2', categoria: 'sector_corralon', valor: 'Playa B — Automóviles Livianos', activo: true },
   { id: 'sec-3', categoria: 'sector_corralon', valor: 'Playa C — Camionetas y Utilitarios', activo: true },

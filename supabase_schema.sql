@@ -35,12 +35,14 @@ CREATE TABLE IF NOT EXISTS public.parametros (
 INSERT INTO public.parametros (categoria, valor, activo)
 VALUES
   -- Dependencias
+  ('dependencia', 'Dirección Operativa de Tránsito', true),
   ('dependencia', 'Dirección de Tránsito SMU', true),
   ('dependencia', 'Patrulla de Protección Ciudadana (PPC)', true),
   ('dependencia', 'Dirección de Transporte Público SMU', true),
   ('dependencia', 'Policía Vial — Operativo Conjunto SMU', true),
   ('dependencia', 'Tribunal Municipal de Faltas', true),
   -- Sectores del Corralón Municipal
+  ('sector_corralon', 'No especificado', true),
   ('sector_corralon', 'Playa A — Sector Motos (Filas 1 a 10)', true),
   ('sector_corralon', 'Playa B — Automóviles Livianos', true),
   ('sector_corralon', 'Playa C — Camionetas y Utilitarios', true),
@@ -99,20 +101,20 @@ CREATE TABLE IF NOT EXISTS public.relevamientos (
   numero_correlativo TEXT UNIQUE NOT NULL DEFAULT ('FSMU-' || nextval('public.relevamientos_idform_seq')::text),
   
   -- 1. Datos de Registro e Ingreso
-  dependencia TEXT NOT NULL,
-  numero_acta TEXT NOT NULL,
-  fecha_ingreso DATE NOT NULL,
-  lugar_secuestro TEXT NOT NULL,
-  sector_corralon TEXT NOT NULL,
+  dependencia TEXT NOT NULL DEFAULT 'Dirección Operativa de Tránsito',
+  numero_acta TEXT DEFAULT 'S/D',
+  fecha_ingreso DATE,
+  lugar_secuestro TEXT DEFAULT 'No especificado',
+  sector_corralon TEXT NOT NULL DEFAULT 'No especificado',
 
   -- 2. Identificación del Vehículo
   tipo_vehiculo TEXT NOT NULL CHECK (tipo_vehiculo IN ('Automóvil', 'Camioneta', 'Motocicleta', 'Utilitario', 'Otro')),
   tipo_vehiculo_otro TEXT DEFAULT '',
   marca TEXT NOT NULL,
-  modelo TEXT NOT NULL,
-  anio_aproximado TEXT DEFAULT 'S/D',
+  modelo TEXT DEFAULT 'S/D',
+  anio_aproximado TEXT NOT NULL DEFAULT 'S/D',
   color_predominante TEXT NOT NULL,
-  dominio TEXT NOT NULL,
+  dominio TEXT DEFAULT 'SIN DOMINIO',
   cantidad_ruedas INTEGER NOT NULL DEFAULT 4,
   numero_motor TEXT DEFAULT '',
   numero_chasis TEXT DEFAULT '',

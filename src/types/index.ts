@@ -49,7 +49,7 @@ export interface RelevamientoVehiculo {
   // 1. Datos de Registro e Ingreso
   dependencia: string;
   numero_acta: string;
-  fecha_ingreso: string;
+  fecha_ingreso: string | null;
   lugar_secuestro: string;
   sector_corralon: string;
 

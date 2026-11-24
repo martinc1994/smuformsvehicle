@@ -12,7 +12,7 @@ const TIPOS_VEHICULO: TipoVehiculo[] = ['Automóvil', 'Camioneta', 'Motocicleta'
 const ESTADOS_GENERALES: EstadoGeneral[] = ['Bueno', 'Regular', 'Malo', 'Chatarra'];
 const TIPOS_FOTO_CHECKS: TipoFotoCheck[] = ['Frente', 'Lateral', 'Parte posterior', 'Otras'];
 
-function formatFechaDMY(dateStr: string): string {
+function formatFechaDMY(dateStr: string | null | undefined): string {
   if (!dateStr) return '    /    /    ';
   const parts = dateStr.split('-');
   if (parts.length === 3) {
