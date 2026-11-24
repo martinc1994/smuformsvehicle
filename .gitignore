@@ -1,0 +1,40 @@
+# Dependencias
+node_modules/
+.pnp
+.pnp.js
+
+# Compilación y distribución
+dist/
+dist-ssr/
+build/
+*.local
+
+# Variables de entorno y secretos (nunca exponer en GitHub)
+.env
+.env.*
+!.env.example
+
+# Archivos de configuración local de Supabase / Netlify CLI
+.supabase/
+.netlify/
+
+# Logs y diagnósticos
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Editores y Sistema Operativo
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

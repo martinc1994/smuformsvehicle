@@ -88,6 +88,7 @@ export interface RelevamientoVehiculo {
     compressedSizeKB: number;
     format: string;
   }[];
+  estado_relevamiento?: 'pendiente_fotos' | 'completo';
 
   // 5. Observaciones y Firma del Agente
   observaciones: string;

@@ -154,13 +154,9 @@ const INITIAL_RELEVAMIENTOS: RelevamientoVehiculo[] = [
   },
 ];
 
-const DEFAULT_SMU_SUPABASE_URL = 'https://uzzbxdjxkesogklzkura.supabase.co';
-const DEFAULT_SMU_SUPABASE_ANON_KEY =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV6emJ4ZGp4a2Vzb2drbHprdXJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTU1MjA1ODMsImV4cCI6MjExMTA5NjU4M30.L0GaahtyV_adRoR87J38Bh1MjXJHtR5GZBrxXlnFMk8';
-
 export function getSupabaseConfig(): { url: string; anonKey: string; isConfigured: boolean } {
-  const envUrl = import.meta.env.VITE_SUPABASE_URL || DEFAULT_SMU_SUPABASE_URL;
-  const envKey = import.meta.env.VITE_SUPABASE_ANON_KEY || DEFAULT_SMU_SUPABASE_ANON_KEY;
+  const envUrl = import.meta.env.VITE_SUPABASE_URL || '';
+  const envKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
   const localUrl = localStorage.getItem(STORAGE_KEYS.SUPABASE_URL) || '';
   const localKey = localStorage.getItem(STORAGE_KEYS.SUPABASE_KEY) || '';
