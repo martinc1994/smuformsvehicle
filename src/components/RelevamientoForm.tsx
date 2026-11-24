@@ -973,60 +973,6 @@ export const RelevamientoForm: React.FC<Props> = ({
         </div>
       </section>
 
-      {/* ===================================================================
-          SECCIÓN 5: OBSERVACIONES Y FIRMA DEL AGENTE RELEVADOR
-      =================================================================== */}
-      <section className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-        <div className="bg-[#1B365D] text-white px-5 py-3 flex items-center gap-2.5">
-          <FileText className="w-4 h-4 text-blue-200" />
-          <h3 className="text-xs sm:text-sm font-bold tracking-wide uppercase">
-            5. Observaciones y Firma del Agente
-          </h3>
-        </div>
-
-        <div className="p-5 sm:p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1.5">
-              Observaciones Adicionales del Relevamiento
-            </label>
-            <textarea
-              rows={4}
-              placeholder="Indique detalles del operativo, grúa interviniente, estado de cerraduras, abolladuras previas o número de expediente vinculado..."
-              value={observaciones}
-              onChange={(e) => setObservaciones(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <div className="bg-slate-50 dark:bg-slate-800/70 rounded-xl p-4 border border-slate-200 dark:border-slate-700 flex flex-col justify-between">
-            <div>
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-                Agente Relevador Autenticado
-              </span>
-              <div className="text-base font-bold text-[#1B365D] dark:text-blue-300 mt-1">
-                {usuarioActual.nombre_completo}
-              </div>
-              <div className="text-xs text-slate-600 dark:text-slate-300 mt-0.5">
-                Legajo N.º: <strong className="font-mono">{usuarioActual.legajo}</strong>
-              </div>
-            </div>
-
-            <div className="mt-4 pt-3 border-t border-slate-200 dark:border-slate-700">
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">
-                Fecha de Firma del Relevamiento
-              </label>
-              <input
-                type="date"
-                required
-                value={fechaRelevamiento}
-                onChange={(e) => setFechaRelevamiento(e.target.value)}
-                className="w-full px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
-              />
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Botón Final de Guardado y Generación de Ficha Impresa */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
         <div className="text-xs text-slate-500 dark:text-slate-400">

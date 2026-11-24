@@ -118,7 +118,7 @@ export const LoginScreen: React.FC<Props> = ({
                   type="text"
                   required
                   autoComplete="username"
-                  placeholder="Ingrese su usuario (Ej: MCastillo)"
+                  placeholder="Ingrese su usuario"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -164,50 +164,10 @@ export const LoginScreen: React.FC<Props> = ({
               <ArrowRight className="w-4 h-4" />
             </button>
 
-            {/* Accesos Rápidos de Demostración para Pruebas */}
-            <div className="pt-4 border-t border-slate-200 dark:border-slate-800">
-              <span className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 text-center mb-2.5">
-                Accesos Rápidos Configurados
-              </span>
-              <div className="grid grid-cols-2 gap-2.5">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setUsername('MCastillo');
-                    setPassword('Movilidad2026.');
-                  }}
-                  className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 hover:border-blue-400 text-left transition cursor-pointer"
-                >
-                  <div className="text-[10px] font-bold uppercase text-purple-600 dark:text-purple-400">
-                    Rol Administrador
-                  </div>
-                  <div className="text-xs font-extrabold text-slate-800 dark:text-slate-200">
-                    MCastillo
-                  </div>
-                  <div className="text-[10px] font-mono text-slate-500">
-                    Movilidad2026.
-                  </div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setUsername('JCarol');
-                    setPassword('Relevador2026.');
-                  }}
-                  className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 hover:border-blue-400 text-left transition cursor-pointer"
-                >
-                  <div className="text-[10px] font-bold uppercase text-blue-600 dark:text-blue-400">
-                    Rol Relevador
-                  </div>
-                  <div className="text-xs font-extrabold text-slate-800 dark:text-slate-200">
-                    JCarol
-                  </div>
-                  <div className="text-[10px] font-mono text-slate-500">
-                    Relevador2026.
-                  </div>
-                </button>
-              </div>
+            <div className="pt-3 border-t border-slate-200 dark:border-slate-800 text-center">
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                Acceso exclusivo para personal autorizado. Para solicitar alta de usuario o restablecimiento de clave, contacte al Administrador del Sistema.
+              </p>
             </div>
           </form>
         </div>
