@@ -152,6 +152,46 @@ const INITIAL_RELEVAMIENTOS: RelevamientoVehiculo[] = [
     fecha_relevamiento: '2026-11-24',
     created_at: '2026-11-24T10:00:00.000Z',
   },
+  {
+    id: 'rel-smt-0002',
+    numero_correlativo: 'INV-2026-0002',
+    dependencia: 'Patrulla de Protección Ciudadana (PPC)',
+    numero_acta: 'ACTA-85104-T',
+    fecha_ingreso: '2026-11-22',
+    lugar_secuestro: 'Av. 24 de Septiembre al 400 (Microcentro)',
+    sector_corralon: 'Playa B — Automóviles Livianos',
+    tipo_vehiculo: 'Automóvil',
+    tipo_vehiculo_otro: '',
+    marca: 'Volkswagen',
+    modelo: 'Gol Trend 1.6',
+    anio_aproximado: '2018',
+    color_predominante: 'Gris Plata',
+    dominio: 'AC452MK',
+    cantidad_ruedas: 4,
+    numero_motor: 'CFZ-884120',
+    numero_chasis: '9BWAB45U7JT091234',
+    estado_general: 'Bueno',
+    posee_motor: true,
+    posee_bateria: true,
+    posee_llave: false,
+    posee_documentacion: false,
+    presenta_faltantes: true,
+    detalle_faltantes: 'Falta rueda de auxilio / estéreo',
+    se_encuentra_desarmado: false,
+    conserva_chapa_patente: true,
+    apto_para_circular: true,
+    tipos_fotos: [],
+    foto_frontal_url: '',
+    foto_lateral_url: '',
+    foto_posterior_url: '',
+    fotos_metadata: [],
+    observaciones: 'Ficha física cargada por equipo de Data Entry. Pendiente localización física en Playa B por agente relevador para toma de las 3 fotografías reglamentarias.',
+    agente_id: '00000000-0000-4000-8000-000000000001',
+    agente_nombre: 'Martín Castillo',
+    agente_legajo: 'ADM-2026',
+    fecha_relevamiento: '2026-11-24',
+    created_at: '2026-11-24T10:30:00.000Z',
+  },
 ];
 
 export function getSupabaseConfig(): { url: string; anonKey: string; isConfigured: boolean } {
@@ -493,49 +533,77 @@ async function uploadPhotoIfSupabaseAvailable(
   return foto.dataUrl;
 }
 
+export function normalizarDominio(dom: string): string {
+  return (dom || '')
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, '');
+}
+
+export function tieneLas3Fotos(reg: RelevamientoVehiculo): boolean {
+  return Boolean(
+    reg.foto_frontal_url && reg.foto_lateral_url && reg.foto_posterior_url
+  );
+}
+
 export async function guardarRelevamiento(
   payload: Omit<
     RelevamientoVehiculo,
     'id' | 'created_at' | 'foto_frontal_url' | 'foto_lateral_url' | 'foto_posterior_url' | 'fotos_metadata'
   >,
   fotos: {
-    frontal: FotoComprimida;
-    lateral: FotoComprimida;
-    posterior: FotoComprimida;
+    frontal?: FotoComprimida | null;
+    lateral?: FotoComprimida | null;
+    posterior?: FotoComprimida | null;
   }
 ): Promise<RelevamientoVehiculo> {
   const [frontalUrl, lateralUrl, posteriorUrl] = await Promise.all([
-    uploadPhotoIfSupabaseAvailable(fotos.frontal, payload.numero_correlativo),
-    uploadPhotoIfSupabaseAvailable(fotos.lateral, payload.numero_correlativo),
-    uploadPhotoIfSupabaseAvailable(fotos.posterior, payload.numero_correlativo),
+    fotos.frontal
+      ? uploadPhotoIfSupabaseAvailable(fotos.frontal, payload.numero_correlativo)
+      : Promise.resolve(''),
+    fotos.lateral
+      ? uploadPhotoIfSupabaseAvailable(fotos.lateral, payload.numero_correlativo)
+      : Promise.resolve(''),
+    fotos.posterior
+      ? uploadPhotoIfSupabaseAvailable(fotos.posterior, payload.numero_correlativo)
+      : Promise.resolve(''),
   ]);
+
+  const metadata: RelevamientoVehiculo['fotos_metadata'] = [];
+  if (fotos.frontal) {
+    metadata.push({
+      slot: 'frontal',
+      originalSizeKB: fotos.frontal.originalSizeKB,
+      compressedSizeKB: fotos.frontal.compressedSizeKB,
+      format: fotos.frontal.format,
+    });
+  }
+  if (fotos.lateral) {
+    metadata.push({
+      slot: 'lateral',
+      originalSizeKB: fotos.lateral.originalSizeKB,
+      compressedSizeKB: fotos.lateral.compressedSizeKB,
+      format: fotos.lateral.format,
+    });
+  }
+  if (fotos.posterior) {
+    metadata.push({
+      slot: 'posterior',
+      originalSizeKB: fotos.posterior.originalSizeKB,
+      compressedSizeKB: fotos.posterior.compressedSizeKB,
+      format: fotos.posterior.format,
+    });
+  }
+
+  const dominioLimpio = normalizarDominio(payload.dominio) || 'S/D';
 
   const nuevoRegistro: RelevamientoVehiculo = {
     ...payload,
+    dominio: dominioLimpio,
     id: crypto.randomUUID ? crypto.randomUUID() : `rel-${Date.now()}`,
     foto_frontal_url: frontalUrl,
     foto_lateral_url: lateralUrl,
     foto_posterior_url: posteriorUrl,
-    fotos_metadata: [
-      {
-        slot: 'frontal',
-        originalSizeKB: fotos.frontal.originalSizeKB,
-        compressedSizeKB: fotos.frontal.compressedSizeKB,
-        format: fotos.frontal.format,
-      },
-      {
-        slot: 'lateral',
-        originalSizeKB: fotos.lateral.originalSizeKB,
-        compressedSizeKB: fotos.lateral.compressedSizeKB,
-        format: fotos.lateral.format,
-      },
-      {
-        slot: 'posterior',
-        originalSizeKB: fotos.posterior.originalSizeKB,
-        compressedSizeKB: fotos.posterior.compressedSizeKB,
-        format: fotos.posterior.format,
-      },
-    ],
+    fotos_metadata: metadata,
     created_at: new Date().toISOString(),
   };
 
@@ -560,6 +628,120 @@ export async function guardarRelevamiento(
   const list = [nuevoRegistro, ...getLocalRelevamientos()];
   localStorage.setItem(STORAGE_KEYS.RELEVAMIENTOS, JSON.stringify(list));
   return nuevoRegistro;
+}
+
+export async function adjuntarFotosARelevamiento(
+  registroActual: RelevamientoVehiculo,
+  fotos: {
+    frontal?: FotoComprimida | null;
+    lateral?: FotoComprimida | null;
+    posterior?: FotoComprimida | null;
+  },
+  agenteRelevador?: Usuario
+): Promise<RelevamientoVehiculo> {
+  const [frontalUrl, lateralUrl, posteriorUrl] = await Promise.all([
+    fotos.frontal
+      ? uploadPhotoIfSupabaseAvailable(fotos.frontal, registroActual.numero_correlativo)
+      : Promise.resolve(registroActual.foto_frontal_url || ''),
+    fotos.lateral
+      ? uploadPhotoIfSupabaseAvailable(fotos.lateral, registroActual.numero_correlativo)
+      : Promise.resolve(registroActual.foto_lateral_url || ''),
+    fotos.posterior
+      ? uploadPhotoIfSupabaseAvailable(fotos.posterior, registroActual.numero_correlativo)
+      : Promise.resolve(registroActual.foto_posterior_url || ''),
+  ]);
+
+  const prevMeta = (registroActual.fotos_metadata || []).filter(
+    (m) =>
+      !(fotos.frontal && m.slot === 'frontal') &&
+      !(fotos.lateral && m.slot === 'lateral') &&
+      !(fotos.posterior && m.slot === 'posterior')
+  );
+
+  if (fotos.frontal) {
+    prevMeta.push({
+      slot: 'frontal',
+      originalSizeKB: fotos.frontal.originalSizeKB,
+      compressedSizeKB: fotos.frontal.compressedSizeKB,
+      format: fotos.frontal.format,
+    });
+  }
+  if (fotos.lateral) {
+    prevMeta.push({
+      slot: 'lateral',
+      originalSizeKB: fotos.lateral.originalSizeKB,
+      compressedSizeKB: fotos.lateral.compressedSizeKB,
+      format: fotos.lateral.format,
+    });
+  }
+  if (fotos.posterior) {
+    prevMeta.push({
+      slot: 'posterior',
+      originalSizeKB: fotos.posterior.originalSizeKB,
+      compressedSizeKB: fotos.posterior.compressedSizeKB,
+      format: fotos.posterior.format,
+    });
+  }
+
+  const tiposFotosSet = new Set<RelevamientoVehiculo['tipos_fotos'][number]>(
+    registroActual.tipos_fotos || []
+  );
+  if (frontalUrl) tiposFotosSet.add('Frente');
+  if (lateralUrl) tiposFotosSet.add('Lateral');
+  if (posteriorUrl) tiposFotosSet.add('Parte posterior');
+
+  const actualizado: RelevamientoVehiculo = {
+    ...registroActual,
+    foto_frontal_url: frontalUrl,
+    foto_lateral_url: lateralUrl,
+    foto_posterior_url: posteriorUrl,
+    fotos_metadata: prevMeta,
+    tipos_fotos: Array.from(tiposFotosSet),
+    ...(agenteRelevador
+      ? {
+          agente_id: agenteRelevador.id,
+          agente_nombre: agenteRelevador.nombre_completo,
+          agente_legajo: agenteRelevador.legajo,
+        }
+      : {}),
+  };
+
+  const supabase = getSupabaseClient();
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('relevamientos')
+        .update({
+          foto_frontal_url: actualizado.foto_frontal_url,
+          foto_lateral_url: actualizado.foto_lateral_url,
+          foto_posterior_url: actualizado.foto_posterior_url,
+          fotos_metadata: actualizado.fotos_metadata,
+          tipos_fotos: actualizado.tipos_fotos,
+          agente_id: actualizado.agente_id,
+          agente_nombre: actualizado.agente_nombre,
+          agente_legajo: actualizado.agente_legajo,
+        })
+        .eq('id', actualizado.id)
+        .select()
+        .single();
+
+      if (!error && data) {
+        const list = getLocalRelevamientos().map((r) =>
+          r.id === actualizado.id ? (data as RelevamientoVehiculo) : r
+        );
+        localStorage.setItem(STORAGE_KEYS.RELEVAMIENTOS, JSON.stringify(list));
+        return data as RelevamientoVehiculo;
+      }
+    } catch {
+      // Fallback local
+    }
+  }
+
+  const list = getLocalRelevamientos().map((r) =>
+    r.id === actualizado.id ? actualizado : r
+  );
+  localStorage.setItem(STORAGE_KEYS.RELEVAMIENTOS, JSON.stringify(list));
+  return actualizado;
 }
 
 export async function eliminarRelevamiento(id: string): Promise<void> {

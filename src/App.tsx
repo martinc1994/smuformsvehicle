@@ -5,12 +5,14 @@ import {
   fetchRelevamientos,
   fetchUsuarios,
   getSupabaseConfig,
+  tieneLas3Fotos,
 } from './lib/supabase';
 import { LoginScreen } from './components/LoginScreen';
 import { RelevamientoForm } from './components/RelevamientoForm';
 import { RelevamientosList } from './components/RelevamientosList';
 import { PrintableFicha } from './components/PrintableFicha';
 import { AdminPanel } from './components/AdminPanel';
+import { RelevadorFotoQuickFlow } from './components/RelevadorFotoQuickFlow';
 import {
   FilePlus2,
   FolderKanban,
@@ -21,6 +23,7 @@ import {
   Shield,
   Printer,
   Database,
+  Camera,
 } from 'lucide-react';
 
 const SESSION_KEY = 'smt_current_user_session';
@@ -43,7 +46,7 @@ export function App() {
   });
 
   const [activeTab, setActiveTab] = useState<
-    'nuevo' | 'listado' | 'ficha' | 'admin'
+    'nuevo' | 'fotos_predio' | 'listado' | 'ficha' | 'admin'
   >('nuevo');
 
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
@@ -85,6 +88,8 @@ export function App() {
   const handleLogin = (u: Usuario) => {
     setUsuarioActual(u);
     localStorage.setItem(SESSION_KEY, JSON.stringify(u));
+    // Si ingresa un relevador del corralón, abrir directamente la búsqueda rápida por patente para tomar fotos
+    setActiveTab(u.rol === 'relevador' ? 'fotos_predio' : 'nuevo');
     cargarTodo();
   };
 
@@ -204,7 +209,20 @@ export function App() {
             }`}
           >
             <FilePlus2 className="w-4 h-4" />
-            Nuevo Relevamiento
+            1. Carga Ficha (Data Entry)
+          </button>
+
+          <button
+            onClick={() => setActiveTab('fotos_predio')}
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition cursor-pointer ${
+              activeTab === 'fotos_predio'
+                ? 'bg-amber-500 text-slate-950 shadow-sm'
+                : 'text-amber-700 dark:text-amber-300 bg-amber-500/10 hover:bg-amber-500/20'
+            }`}
+          >
+            <Camera className="w-4 h-4" />
+            2. Relevamiento Fotográfico en Predio (
+            {relevamientos.filter((r) => !tieneLas3Fotos(r)).length} pendientes)
           </button>
 
           <button
@@ -216,7 +234,7 @@ export function App() {
             }`}
           >
             <FolderKanban className="w-4 h-4" />
-            Expedientes Relevados ({relevamientos.length})
+            Expedientes ({relevamientos.length})
           </button>
 
           {registroSeleccionado && (
@@ -259,11 +277,24 @@ export function App() {
           />
         )}
 
+        {activeTab === 'fotos_predio' && (
+          <RelevadorFotoQuickFlow
+            registros={relevamientos}
+            usuarioActual={usuarioActual}
+            onUpdated={async (actualizado) => {
+              await cargarTodo();
+              setRegistroSeleccionado(actualizado);
+            }}
+            onSelectPrint={handleOpenFicha}
+          />
+        )}
+
         {activeTab === 'listado' && (
           <RelevamientosList
             registros={relevamientos}
             usuarioActual={usuarioActual}
             onSelectPrint={handleOpenFicha}
+            onGoToFotosPredio={() => setActiveTab('fotos_predio')}
             onRefresh={cargarTodo}
           />
         )}

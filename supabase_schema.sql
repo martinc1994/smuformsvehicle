@@ -154,10 +154,22 @@ CREATE POLICY "Permitir lectura y escritura de parametros" ON public.parametros 
 DROP POLICY IF EXISTS "Permitir lectura y escritura de relevamientos" ON public.relevamientos;
 CREATE POLICY "Permitir lectura y escritura de relevamientos" ON public.relevamientos FOR ALL USING (true) WITH CHECK (true);
 
--- 5. Bucket de Storage para fotografías comprimidas WebP
-INSERT INTO storage.buckets (id, name, public)
-VALUES ('vehiculos-fotos', 'vehiculos-fotos', true)
-ON CONFLICT (id) DO NOTHING;
+-- 5. Bucket de Storage para fotografías comprimidas WebP (Máx 1.5 MB por foto, formatos livianos WebP/JPEG)
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES (
+  'vehiculos-fotos',
+  'vehiculos-fotos',
+  true,
+  1572864,
+  ARRAY['image/webp', 'image/jpeg', 'image/png']
+)
+ON CONFLICT (id) DO UPDATE SET
+  public = true,
+  file_size_limit = 1572864,
+  allowed_mime_types = ARRAY['image/webp', 'image/jpeg', 'image/png'];
+
+-- Índice rápido para búsqueda instantánea por patente normalizada (sin espacios ni guiones) en el predio
+CREATE INDEX IF NOT EXISTS idx_relevamientos_dominio ON public.relevamientos (dominio);
 
 DROP POLICY IF EXISTS "Acceso publico a fotos de vehiculos" ON storage.objects;
 CREATE POLICY "Acceso publico a fotos de vehiculos"

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { RelevamientoVehiculo, Usuario } from '../types';
-import { eliminarRelevamiento } from '../lib/supabase';
+import { eliminarRelevamiento, normalizarDominio, tieneLas3Fotos } from '../lib/supabase';
 import {
   Search,
   Printer,
@@ -11,12 +11,16 @@ import {
   MapPin,
   FileCheck2,
   Filter,
+  Camera,
+  CheckCircle2,
+  Clock,
 } from 'lucide-react';
 
 interface Props {
   registros: RelevamientoVehiculo[];
   usuarioActual: Usuario;
   onSelectPrint: (reg: RelevamientoVehiculo) => void;
+  onGoToFotosPredio?: () => void;
   onRefresh: () => void;
 }
 
@@ -24,16 +28,20 @@ export const RelevamientosList: React.FC<Props> = ({
   registros,
   usuarioActual,
   onSelectPrint,
+  onGoToFotosPredio,
   onRefresh,
 }) => {
   const [busqueda, setBusqueda] = useState('');
   const [filtroTipo, setFiltroTipo] = useState<string>('TODOS');
   const [filtroEstado, setFiltroEstado] = useState<string>('TODOS');
+  const [filtroFotos, setFiltroFotos] = useState<string>('TODOS');
 
   const filtrados = registros.filter((r) => {
+    const cleanQ = normalizarDominio(busqueda);
     const matchTexto =
+      !busqueda.trim() ||
       r.numero_correlativo.toLowerCase().includes(busqueda.toLowerCase()) ||
-      r.dominio.toLowerCase().includes(busqueda.toLowerCase()) ||
+      normalizarDominio(r.dominio).includes(cleanQ) ||
       r.numero_acta.toLowerCase().includes(busqueda.toLowerCase()) ||
       r.marca.toLowerCase().includes(busqueda.toLowerCase()) ||
       r.modelo.toLowerCase().includes(busqueda.toLowerCase()) ||
@@ -42,8 +50,13 @@ export const RelevamientosList: React.FC<Props> = ({
     const matchTipo = filtroTipo === 'TODOS' || r.tipo_vehiculo === filtroTipo;
     const matchEstado =
       filtroEstado === 'TODOS' || r.estado_general === filtroEstado;
+    const completoFotos = tieneLas3Fotos(r);
+    const matchFotos =
+      filtroFotos === 'TODOS' ||
+      (filtroFotos === 'COMPLETOS' && completoFotos) ||
+      (filtroFotos === 'PENDIENTES' && !completoFotos);
 
-    return matchTexto && matchTipo && matchEstado;
+    return matchTexto && matchTipo && matchEstado && matchFotos;
   });
 
   const handleDelete = async (id: string, correlativo: string) => {
@@ -91,6 +104,16 @@ export const RelevamientosList: React.FC<Props> = ({
             <Filter className="w-3.5 h-3.5" />
             <span>Filtros:</span>
           </div>
+
+          <select
+            value={filtroFotos}
+            onChange={(e) => setFiltroFotos(e.target.value)}
+            className="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold"
+          >
+            <option value="TODOS">Fotos: Todos</option>
+            <option value="PENDIENTES">Pendientes de Fotos en Predio</option>
+            <option value="COMPLETOS">Completos (3 Fotos)</option>
+          </select>
 
           <select
             value={filtroTipo}
@@ -176,28 +199,41 @@ export const RelevamientosList: React.FC<Props> = ({
                     </div>
                   </div>
 
-                  {/* Miniaturas de las 3 fotografías WebP */}
+                  {/* Miniaturas de las 3 fotografías WebP o alerta de Pendiente en Predio */}
                   <div className="grid grid-cols-3 gap-2">
                     {[
                       { url: reg.foto_frontal_url, label: 'Frontal' },
                       { url: reg.foto_lateral_url, label: 'Lateral' },
                       { url: reg.foto_posterior_url, label: 'Posterior' },
-                    ].map((f, idx) => (
-                      <div
-                        key={idx}
-                        onClick={() => onSelectPrint(reg)}
-                        className="relative rounded-xl overflow-hidden bg-slate-950 aspect-[4/3] border border-slate-200 dark:border-slate-800 cursor-pointer group"
-                      >
-                        <img
-                          src={f.url}
-                          alt={f.label}
-                          className="w-full h-full object-cover group-hover:scale-105 transition"
-                        />
-                        <span className="absolute bottom-1 left-1 right-1 bg-black/65 text-white text-[10px] font-semibold text-center py-0.5 rounded">
-                          {f.label}
-                        </span>
-                      </div>
-                    ))}
+                    ].map((f, idx) =>
+                      f.url ? (
+                        <div
+                          key={idx}
+                          onClick={() => onSelectPrint(reg)}
+                          className="relative rounded-xl overflow-hidden bg-slate-950 aspect-[4/3] border border-slate-200 dark:border-slate-800 cursor-pointer group"
+                        >
+                          <img
+                            src={f.url}
+                            alt={f.label}
+                            className="w-full h-full object-cover group-hover:scale-105 transition"
+                          />
+                          <span className="absolute bottom-1 left-1 right-1 bg-black/65 text-white text-[10px] font-semibold text-center py-0.5 rounded">
+                            {f.label}
+                          </span>
+                        </div>
+                      ) : (
+                        <div
+                          key={idx}
+                          onClick={() => onGoToFotosPredio && onGoToFotosPredio()}
+                          className="rounded-xl bg-amber-50/70 dark:bg-amber-950/20 aspect-[4/3] border border-dashed border-amber-400 dark:border-amber-600/50 flex flex-col items-center justify-center p-2 text-center cursor-pointer hover:bg-amber-100/60 transition"
+                        >
+                          <Clock className="w-4 h-4 text-amber-600 dark:text-amber-400 mb-1" />
+                          <span className="text-[10px] font-bold text-amber-800 dark:text-amber-300">
+                            Sin {f.label}
+                          </span>
+                        </div>
+                      )
+                    )}
                   </div>
 
                   {/* Metadatos del secuestro */}

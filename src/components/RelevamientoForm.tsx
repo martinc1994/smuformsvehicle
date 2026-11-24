@@ -235,14 +235,6 @@ export const RelevamientoForm: React.FC<Props> = ({
       return;
     }
 
-    // Validación obligatoria de las 3 fotografías del vehículo relevado
-    if (!fotoFrontal || !fotoLateral || !fotoPosterior) {
-      setErrorMsg(
-        'Para culminar el registro es OBLIGATORIO adjuntar las 3 fotografías del vehículo relevado (Vista Frontal, Vista Lateral y Vista Posterior).'
-      );
-      return;
-    }
-
     setSaving(true);
     try {
       const nuevo = await guardarRelevamiento(
@@ -573,14 +565,16 @@ export const RelevamientoForm: React.FC<Props> = ({
             {/* Dominio (Patente) */}
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1.5">
-                Dominio (Patente)
+                Dominio (Patente sin espacios ni guiones) *
               </label>
               <input
                 type="text"
-                placeholder="Ej: A148KZP / AB123CD / SIN DOMINIO"
+                placeholder="Ej: A148KZP o AC452MK (o SD si no posee)"
                 value={dominio}
-                onChange={(e) => setDominio(e.target.value.toUpperCase())}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm font-bold uppercase tracking-wider focus:outline-none focus:ring-2 focus:ring-blue-500"
+                onChange={(e) =>
+                  setDominio(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''))
+                }
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm font-bold font-mono uppercase tracking-widest focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
@@ -792,14 +786,14 @@ export const RelevamientoForm: React.FC<Props> = ({
       </section>
 
       {/* ===================================================================
-          SECCIÓN 4: REGISTRO FOTOGRÁFICO (3 FOTOS OBLIGATORIAS + CONVERSOR WEBP)
+          SECCIÓN 4: REGISTRO FOTOGRÁFICO (OPCIONAL EN DATA ENTRY / OBLIGATORIO AL CULMINAR EN PREDIO)
       =================================================================== */}
       <section className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
         <div className="bg-[#1B365D] text-white px-5 py-3 flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2.5">
             <Camera className="w-4 h-4 text-blue-200" />
             <h3 className="text-xs sm:text-sm font-bold tracking-wide uppercase">
-              4. Registro Fotográfico Obligatorio (Conversor Automático WebP Liviano)
+              4. Registro Fotográfico (Opcional en Data Entry / Se puede adjuntar luego en Predio)
             </h3>
           </div>
           <span
@@ -809,18 +803,19 @@ export const RelevamientoForm: React.FC<Props> = ({
                 : 'bg-amber-400 text-slate-950'
             }`}
           >
-            {totalFotosCargadas} / 3 Fotos Cargadas
+            {totalFotosCargadas === 3
+              ? '3 / 3 Fotos Listas (Registro Completo)'
+              : `${totalFotosCargadas} / 3 Fotos (Quedará Pendiente de Fotos en Predio)`}
           </span>
         </div>
 
         <div className="p-5 sm:p-6 space-y-5">
-          {/* Barra informativa de ahorro de espacio en el servidor Supabase */}
+          {/* Barra informativa de flujo dual Data Entry + Relevador en Predio */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl bg-blue-50/80 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/60 text-xs">
             <div className="flex items-center gap-2.5 text-blue-900 dark:text-blue-200">
               <Sparkles className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
               <span>
-                <strong>Optimizador de Servidor Activo:</strong> Cada fotografía tomada con el celular (3 a 6 MB) se redimensiona a 1280px y se convierte a{' '}
-                <code className="font-bold">WebP (~60 KB)</code> antes de subirse a Supabase.
+                <strong>Flujo Data Entry + Corralón:</strong> Puede guardar la ficha ahora <strong>sin fotografías</strong> y el relevador del predio podrá buscarla por <strong>Patente</strong> desde la pestaña <em>"Relevamiento Fotográfico en Predio"</em> para tomar las 3 fotos (convertidas automáticamente a <code className="font-bold">WebP ~60 KB</code>).
               </span>
             </div>
 
@@ -1036,12 +1031,12 @@ export const RelevamientoForm: React.FC<Props> = ({
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
         <div className="text-xs text-slate-500 dark:text-slate-400">
           {totalFotosCargadas < 3 ? (
-            <span className="text-amber-600 dark:text-amber-400 font-semibold">
-              * Recuerde cargar las 3 fotografías obligatorias (Frontal, Lateral y Posterior) para habilitar el cierre del registro.
+            <span className="text-blue-600 dark:text-blue-400 font-semibold">
+              ℹ️ Modo Data Entry: Se guardará la ficha técnica como <strong>"Pendiente de Fotos"</strong> para que el relevador del corralón busque por patente y adjunte las 3 fotografías en el predio.
             </span>
           ) : (
             <span className="text-emerald-600 dark:text-emerald-400 font-semibold">
-              ✓ Las 3 fotografías reglamentarias están comprimidas en formato liviano y listas para guardar.
+              ✓ Las 3 fotografías reglamentarias están comprimidas en formato WebP liviano. El registro quedará 100% culminado.
             </span>
           )}
         </div>
@@ -1059,7 +1054,9 @@ export const RelevamientoForm: React.FC<Props> = ({
           ) : (
             <>
               <Save className="w-4 h-4" />
-              Guardar Relevamiento y Generar Ficha A4
+              {totalFotosCargadas < 3
+                ? 'Guardar Ficha (Dejar Pendiente de Fotos)'
+                : 'Guardar Relevamiento Completo y Ver Ficha A4'}
             </>
           )}
         </button>
