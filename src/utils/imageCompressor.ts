@@ -1,15 +1,15 @@
 import { FotoComprimida } from '../types';
 
 /**
- * Convierte y comprime cualquier imagen capturada por cámara o galería a formato WebP liviano
- * (máx 1280px de lado mayor, calidad 0.72, típicamente entre 35 KB y 95 KB) para no saturar Supabase Storage.
+ * Convierte y comprime cualquier imagen capturada por cámara o galería a formato WebP/JPEG ultra-liviano
+ * (máx 960px de lado mayor, calidad 0.62, típicamente entre 35 KB y 75 KB) para proteger la cuota FREE de 1 GB de Supabase Storage.
  */
 export async function compressImageToWebP(
   file: File,
   slot: 'frontal' | 'lateral' | 'posterior',
   label: string,
-  maxDimension = 1280,
-  quality = 0.74
+  maxDimension = 960,
+  quality = 0.62
 ): Promise<FotoComprimida> {
   const originalSizeKB = Math.round((file.size / 1024) * 10) / 10;
 
@@ -68,7 +68,7 @@ export async function compressImageToWebP(
           ia[i] = byteString.charCodeAt(i);
         }
         const ext = format === 'image/webp' ? 'webp' : 'jpg';
-        const compressedFile = new File([ab], `${slot}_${Date.now()}.${ext}`, {
+        const compressedFile = new File([ab], `${slot}.${ext}`, {
           type: format,
         });
 

@@ -597,7 +597,8 @@ export async function generarSiguienteCorrelativo(): Promise<string> {
 
 async function uploadPhotoIfSupabaseAvailable(
   foto: FotoComprimida,
-  correlativo: string
+  correlativo: string,
+  previousUrl?: string
 ): Promise<string> {
   const supabase = getSupabaseClient();
   if (!supabase || !foto.file) {
@@ -605,8 +606,20 @@ async function uploadPhotoIfSupabaseAvailable(
   }
 
   try {
+    // Si existía una foto anterior con nombre distinto (ej: con timestamp viejo), borrarla para no acumular duplicados en la cuota Free
+    if (previousUrl && previousUrl.includes('/vehiculos-fotos/')) {
+      const oldPath = previousUrl.split('/vehiculos-fotos/')[1]?.split('?')[0];
+      const ext = foto.format === 'image/webp' ? 'webp' : 'jpg';
+      const newFixedPath = `${correlativo}/${foto.slot}.${ext}`;
+      if (oldPath && oldPath !== newFixedPath) {
+        await supabase.storage.from('vehiculos-fotos').remove([oldPath]);
+      }
+    }
+
     const ext = foto.format === 'image/webp' ? 'webp' : 'jpg';
-    const filePath = `${correlativo}/${foto.slot}_${Date.now()}.${ext}`;
+    // Nombre fijo por vista (frontal.webp, lateral.webp, posterior.webp) con upsert:true
+    // para que un vehículo jamás ocupe más de 3 archivos en el bucket
+    const filePath = `${correlativo}/${foto.slot}.${ext}`;
     const { error } = await supabase.storage
       .from('vehiculos-fotos')
       .upload(filePath, foto.file, {
@@ -617,11 +630,11 @@ async function uploadPhotoIfSupabaseAvailable(
     if (!error) {
       const { data } = supabase.storage.from('vehiculos-fotos').getPublicUrl(filePath);
       if (data?.publicUrl) {
-        return data.publicUrl;
+        return `${data.publicUrl}?v=${Date.now()}`;
       }
     }
   } catch {
-    // Si el bucket no está creado aún, se almacena el WebP comprimido en base64 (solo ~55KB)
+    // Fallback
   }
 
   return foto.dataUrl;
@@ -800,13 +813,25 @@ export async function adjuntarFotosARelevamiento(
 ): Promise<RelevamientoVehiculo> {
   const [frontalUrl, lateralUrl, posteriorUrl] = await Promise.all([
     fotos.frontal
-      ? uploadPhotoIfSupabaseAvailable(fotos.frontal, registroActual.numero_correlativo)
+      ? uploadPhotoIfSupabaseAvailable(
+          fotos.frontal,
+          registroActual.numero_correlativo,
+          registroActual.foto_frontal_url
+        )
       : Promise.resolve(registroActual.foto_frontal_url || ''),
     fotos.lateral
-      ? uploadPhotoIfSupabaseAvailable(fotos.lateral, registroActual.numero_correlativo)
+      ? uploadPhotoIfSupabaseAvailable(
+          fotos.lateral,
+          registroActual.numero_correlativo,
+          registroActual.foto_lateral_url
+        )
       : Promise.resolve(registroActual.foto_lateral_url || ''),
     fotos.posterior
-      ? uploadPhotoIfSupabaseAvailable(fotos.posterior, registroActual.numero_correlativo)
+      ? uploadPhotoIfSupabaseAvailable(
+          fotos.posterior,
+          registroActual.numero_correlativo,
+          registroActual.foto_posterior_url
+        )
       : Promise.resolve(registroActual.foto_posterior_url || ''),
   ]);
 

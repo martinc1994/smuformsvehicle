@@ -184,7 +184,21 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_relevamientos_dominio_unico
   WHERE dominio IS NOT NULL AND dominio <> '' AND dominio <> 'SINDOMINIO';
 
 DROP POLICY IF EXISTS "Acceso publico a fotos de vehiculos" ON storage.objects;
-CREATE POLICY "Acceso publico a fotos de vehiculos"
-ON storage.objects FOR ALL
+DROP POLICY IF EXISTS "Subida y reemplazo de fotos de vehiculos" ON storage.objects;
+DROP POLICY IF EXISTS "Actualizacion de fotos de vehiculos" ON storage.objects;
+DROP POLICY IF EXISTS "Eliminacion de fotos de vehiculos" ON storage.objects;
+
+-- Políticas de Storage sin SELECT masivo (Elimina la alerta "Clients can list all files in this bucket" en Supabase Dashboard)
+-- Como el bucket es public = true, las URLs públicas de cada foto siguen funcionando directamente sin permitir listado global.
+CREATE POLICY "Subida y reemplazo de fotos de vehiculos"
+ON storage.objects FOR INSERT
+WITH CHECK (bucket_id = 'vehiculos-fotos');
+
+CREATE POLICY "Actualizacion de fotos de vehiculos"
+ON storage.objects FOR UPDATE
 USING (bucket_id = 'vehiculos-fotos')
 WITH CHECK (bucket_id = 'vehiculos-fotos');
+
+CREATE POLICY "Eliminacion de fotos de vehiculos"
+ON storage.objects FOR DELETE
+USING (bucket_id = 'vehiculos-fotos');
