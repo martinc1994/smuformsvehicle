@@ -9,6 +9,7 @@ import {
   agregarParametro,
   crearUsuario,
   eliminarParametro,
+  eliminarUsuario,
   getSupabaseConfig,
   saveSupabaseConfig,
   toggleEstadoUsuario,
@@ -142,6 +143,30 @@ export const AdminPanel: React.FC<Props> = ({
     }
     await toggleEstadoUsuario(u.id, !u.activo);
     onRefreshData();
+  };
+
+  const handleDeleteUser = async (u: Usuario) => {
+    if (u.username.toLowerCase() === 'mcastillo') {
+      alert('El usuario administrador principal MCastillo no puede eliminarse.');
+      return;
+    }
+    if (
+      !window.confirm(
+        `¿Confirma eliminar definitivamente al usuario "${u.username}" (${u.nombre_completo})?`
+      )
+    ) {
+      return;
+    }
+    const res = await eliminarUsuario(u.id, u.username);
+    if (res.error) {
+      setUserFeedback({ type: 'err', msg: res.error });
+    } else {
+      setUserFeedback({
+        type: 'ok',
+        msg: `Usuario "${u.username}" eliminado correctamente.`,
+      });
+      onRefreshData();
+    }
   };
 
   const handleAddParametro = async (e: React.FormEvent) => {
@@ -389,25 +414,37 @@ export const AdminPanel: React.FC<Props> = ({
                         {u.password_hash}
                       </td>
                       <td className="py-3.5 px-4 text-right">
-                        <button
-                          onClick={() => handleToggleUser(u)}
-                          disabled={u.username.toLowerCase() === 'mcastillo'}
-                          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer disabled:opacity-50 ${
-                            u.activo
-                              ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
-                              : 'bg-rose-500/10 text-rose-700 dark:text-rose-300'
-                          }`}
-                        >
-                          {u.activo ? (
-                            <>
-                              <CheckCircle2 className="w-3.5 h-3.5" /> Activo
-                            </>
-                          ) : (
-                            <>
-                              <XCircle className="w-3.5 h-3.5" /> Inactivo
-                            </>
+                        <div className="inline-flex items-center gap-1.5">
+                          <button
+                            onClick={() => handleToggleUser(u)}
+                            disabled={u.username.toLowerCase() === 'mcastillo'}
+                            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer disabled:opacity-50 ${
+                              u.activo
+                                ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
+                                : 'bg-rose-500/10 text-rose-700 dark:text-rose-300'
+                            }`}
+                          >
+                            {u.activo ? (
+                              <>
+                                <CheckCircle2 className="w-3.5 h-3.5" /> Activo
+                              </>
+                            ) : (
+                              <>
+                                <XCircle className="w-3.5 h-3.5" /> Inactivo
+                              </>
+                            )}
+                          </button>
+
+                          {u.username.toLowerCase() !== 'mcastillo' && (
+                            <button
+                              onClick={() => handleDeleteUser(u)}
+                              className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-500/10 transition cursor-pointer"
+                              title="Eliminar usuario"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
                           )}
-                        </button>
+                        </div>
                       </td>
                     </tr>
                   ))}

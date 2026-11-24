@@ -15,11 +15,10 @@ CREATE TABLE IF NOT EXISTS public.usuarios (
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- Usuarios Iniciales: Administrador "MCastillo" (pass: "Movilidad2026.") y Relevador de prueba
+-- Usuario Inicial: Administrador "MCastillo" (pass: "Movilidad2026.")
 INSERT INTO public.usuarios (id, username, password_hash, nombre_completo, legajo, rol, activo)
 VALUES
-  ('00000000-0000-4000-8000-000000000001', 'MCastillo', 'Movilidad2026.', 'Martín Castillo', 'ADM-2026', 'admin', true),
-  ('00000000-0000-4000-8000-000000000002', 'JCarol', 'Relevador2026.', 'Juan Carlos Carol', 'LEG-4812', 'relevador', true)
+  ('00000000-0000-4000-8000-000000000001', 'MCastillo', 'Movilidad2026.', 'Martín Castillo', 'ADM-2026', 'admin', true)
 ON CONFLICT (username) DO NOTHING;
 
 -- 2. Tabla de Catálogos Parametrizables (Dependencias, Sectores, Marcas, Colores, Faltantes)

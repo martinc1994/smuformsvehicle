@@ -21,16 +21,6 @@ const INITIAL_USUARIOS: Usuario[] = [
     activo: true,
     created_at: '2026-01-01T08:00:00.000Z',
   },
-  {
-    id: '00000000-0000-4000-8000-000000000002',
-    username: 'JCarol',
-    password_hash: 'Relevador2026.',
-    nombre_completo: 'Juan Carlos Carol',
-    legajo: 'LEG-4812',
-    rol: 'relevador',
-    activo: true,
-    created_at: '2026-01-02T09:30:00.000Z',
-  },
 ];
 
 // Semilla inicial de Parámetros Oficiales para San Miguel de Tucumán
@@ -194,9 +184,13 @@ const INITIAL_RELEVAMIENTOS: RelevamientoVehiculo[] = [
   },
 ];
 
+const DEFAULT_SMU_SUPABASE_URL = 'https://uzzbxdjxkesogklzkura.supabase.co';
+const DEFAULT_SMU_SUPABASE_ANON_KEY =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV6emJ4ZGp4a2Vzb2drbHprdXJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTU1MjA1ODMsImV4cCI6MjExMTA5NjU4M30.L0GaahtyV_adRoR87J38Bh1MjXJHtR5GZBrxXlnFMk8';
+
 export function getSupabaseConfig(): { url: string; anonKey: string; isConfigured: boolean } {
-  const envUrl = import.meta.env.VITE_SUPABASE_URL || '';
-  const envKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+  const envUrl = import.meta.env.VITE_SUPABASE_URL || DEFAULT_SMU_SUPABASE_URL;
+  const envKey = import.meta.env.VITE_SUPABASE_ANON_KEY || DEFAULT_SMU_SUPABASE_ANON_KEY;
 
   const localUrl = localStorage.getItem(STORAGE_KEYS.SUPABASE_URL) || '';
   const localKey = localStorage.getItem(STORAGE_KEYS.SUPABASE_KEY) || '';
@@ -235,6 +229,17 @@ export function getSupabaseClient(): SupabaseClient | null {
 }
 
 // Helpers de Persistencia Local (Sincronizada o Fallback si aún no conectó las keys de Supabase)
+function generateUUID(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
 function getLocalUsuarios(): Usuario[] {
   const raw = localStorage.getItem(STORAGE_KEYS.USUARIOS);
   if (!raw) {
@@ -242,15 +247,18 @@ function getLocalUsuarios(): Usuario[] {
     return INITIAL_USUARIOS;
   }
   try {
-    const parsed: Usuario[] = JSON.parse(raw);
+    // Limpiar usuario de prueba JCarol si había quedado guardado en el navegador
+    const parsed: Usuario[] = (JSON.parse(raw) as Usuario[]).filter(
+      (u) => u.username.toLowerCase() !== 'jcarol'
+    );
     // Garantizar que MCastillo siempre exista con las credenciales solicitadas
     const hasAdmin = parsed.some(
       (u) => u.username.toLowerCase() === 'mcastillo'
     );
     if (!hasAdmin) {
       parsed.unshift(INITIAL_USUARIOS[0]);
-      localStorage.setItem(STORAGE_KEYS.USUARIOS, JSON.stringify(parsed));
     }
+    localStorage.setItem(STORAGE_KEYS.USUARIOS, JSON.stringify(parsed));
     return parsed;
   } catch {
     return INITIAL_USUARIOS;
@@ -353,39 +361,87 @@ export async function fetchUsuarios(): Promise<Usuario[]> {
 export async function crearUsuario(
   nuevo: Omit<Usuario, 'id' | 'created_at'>
 ): Promise<{ data?: Usuario; error?: string }> {
+  const cleanUsername = nuevo.username.trim();
   const usuarios = await fetchUsuarios();
-  if (usuarios.some((u) => u.username.toLowerCase() === nuevo.username.trim().toLowerCase())) {
+  if (
+    usuarios.some(
+      (u) => u.username.toLowerCase() === cleanUsername.toLowerCase()
+    )
+  ) {
     return { error: 'Ya existe un usuario con ese nombre de acceso.' };
   }
-
-  const userObj: Usuario = {
-    ...nuevo,
-    username: nuevo.username.trim(),
-    id: crypto.randomUUID ? crypto.randomUUID() : `usr-${Date.now()}`,
-    created_at: new Date().toISOString(),
-  };
 
   const supabase = getSupabaseClient();
   if (supabase) {
     try {
       const { data, error } = await supabase
         .from('usuarios')
-        .insert([userObj])
+        .insert([
+          {
+            username: cleanUsername,
+            password_hash: nuevo.password_hash,
+            nombre_completo: nuevo.nombre_completo.trim(),
+            legajo: nuevo.legajo.trim().toUpperCase(),
+            rol: nuevo.rol,
+            activo: true,
+          },
+        ])
         .select()
         .single();
-      if (!error && data) {
-        const updated = [...getLocalUsuarios(), data as Usuario];
+
+      if (error) {
+        return {
+          error: `Error al guardar en Supabase: ${error.message}`,
+        };
+      }
+
+      if (data) {
+        const currentLocal = getLocalUsuarios().filter(
+          (u) => u.username.toLowerCase() !== cleanUsername.toLowerCase()
+        );
+        const updated = [...currentLocal, data as Usuario];
         localStorage.setItem(STORAGE_KEYS.USUARIOS, JSON.stringify(updated));
         return { data: data as Usuario };
       }
-    } catch {
-      // Fallback a local
+    } catch (err: any) {
+      return {
+        error: err?.message || 'Error de red al intentar crear el usuario en Supabase.',
+      };
     }
   }
+
+  const userObj: Usuario = {
+    ...nuevo,
+    username: cleanUsername,
+    id: generateUUID(),
+    created_at: new Date().toISOString(),
+  };
 
   const updated = [...getLocalUsuarios(), userObj];
   localStorage.setItem(STORAGE_KEYS.USUARIOS, JSON.stringify(updated));
   return { data: userObj };
+}
+
+export async function eliminarUsuario(id: string, username: string): Promise<{ error?: string }> {
+  if (username.toLowerCase() === 'mcastillo') {
+    return { error: 'El administrador principal MCastillo no puede eliminarse.' };
+  }
+
+  const supabase = getSupabaseClient();
+  if (supabase) {
+    try {
+      const { error } = await supabase.from('usuarios').delete().eq('id', id);
+      if (error) {
+        return { error: error.message };
+      }
+    } catch (err: any) {
+      return { error: err?.message || 'No se pudo eliminar en Supabase.' };
+    }
+  }
+
+  const updated = getLocalUsuarios().filter((u) => u.id !== id && u.username !== username);
+  localStorage.setItem(STORAGE_KEYS.USUARIOS, JSON.stringify(updated));
+  return {};
 }
 
 export async function toggleEstadoUsuario(id: string, activo: boolean): Promise<void> {
